@@ -1,6 +1,10 @@
 # Log de prompts a las IAs
 
+<<<<<<< HEAD
 * Nombre de integrante - Prompt #(# de prompt)
+=======
+* Nombre de integrante - Prompt # (# de prompt)
+>>>>>>> e4f5669 (docs: movido log a carpeta correspondiente)
 * IA utilizada
 * Prompt del integrante completo
 * Respuesta de la IA completa
@@ -1781,6 +1785,7 @@ Esta estructura les dará un entorno de trabajo limpio, ordenado y escalable sin
 
 **Qué se denegó:** No se requería que la IA armara el `README.md` en ese momento ni que analizara los perfiles aún.
 
+<<<<<<< HEAD
 ---
 
 # Lyla Alice - Prompt #26
@@ -1862,3 +1867,6 @@ DATABASE_URL=sqlite:///./ci_check.db .venv/bin/alembic upgrade head
 **Qué se modificó:** README, configuración, health, frontend, tests, Docker, workflow CI/CD, referencias de documentación y este AI_LOG.
 
 **Qué se modificó:** Se decidió darle a la IA las instrucciones específicas de lo que debía contener el `CONTRIBUTING.md` (o archivo similar) en el siguiente prompt.
+=======
+**Qué se modificó:** Se decidió darle a la IA las instrucciones específicas de lo que debía contener el CONTRIBUTING.md (o archivo similar) en el siguiente prompt.
+>>>>>>> e4f5669 (docs: movido log a carpeta correspondiente)
