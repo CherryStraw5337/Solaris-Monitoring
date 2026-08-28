@@ -8,10 +8,14 @@ body:
     attributes:
       label: Problema que resuelve / Historia de Usuario
 <<<<<<< HEAD
+<<<<<<< HEAD
       description: Describe brevemente qué problema soluciona esta tarea, o redacta la User Story.
 =======
       description: Describe brevemente qué problema soluciona esta tarea o redacta la User Story.
 >>>>>>> f62bc76 (yml: creado plantilla para desarrollo de tarea)
+=======
+      description: Describe brevemente qué problema soluciona esta tarea, o redacta la User Story.
+>>>>>>> 45258b3 (yml: creado plantilla para desarrollo de tarea)
     validations:
       required: true
   - type: textarea
