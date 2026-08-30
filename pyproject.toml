@@ -42,3 +42,6 @@ exclude_also = [
     "^\\s*\\.\\.\\.$",
     "if TYPE_CHECKING:",
 ]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
