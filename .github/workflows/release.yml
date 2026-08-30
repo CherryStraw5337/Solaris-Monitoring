@@ -7,13 +7,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
 
-permissions: 
-  contents: 
-    - write
-
-
->>>>>>> 259d0c7 (yml: creado workflow para versionado tras merge)
 jobs:
   release:
     if: github.event.pull_request.merged == true
