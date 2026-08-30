@@ -1529,6 +1529,136 @@ show_missing = true
 
 ---
 
+# Lyla Alice - Prompt #10
+### IA Utilizada: Gemini
+**Prompt del integrante completo:**
+> El Project ya fue creado. Con los AI_LOGs, me refería a que los seguiremos añadiendo sin importar que, recuerda que cada prompt y respuesta que tú me proporciones deben ir registradas, sin importar que, así mantenemos la transparencia del proyecto. La siguiente tarea que debes cumplir: revisa las branches del repositorio (a excpeción de main), analiza cada una, hallando sus fortalezas y debilidades, y para la mía, la rama lyla, por favor dime qué cambios debo hacer a los archivos subidos, especialmente si son .yml o de configuración.
+
+**Respuesta de la IA completa:**
+````bash
+¡Entendido, Lyla! Mantendremos la transparencia y el rigor con los registros en tu `AI_LOG.md` para cada interacción que tengamos.
+
+### 1. Análisis de las ramas del repositorio
+
+Fui a revisar el estado actual del repositorio **EDSIA-Beyond** y, actualmente, **solo existe una rama: `main**`. El repositorio cuenta únicamente con el commit inicial que incluye los archivos base (`.gitignore`, `LICENSE`, y `README.md`).
+
+Esto significa que ni tú ni tus compañeros han hecho *push* de sus ramas locales (como tu rama `lyla`) al repositorio remoto en la web. Por esta razón, me es imposible analizar las fortalezas o debilidades de los avances en las ramas de Martin o Jose, ya que aún no están publicadas en GitHub.
+
+### 2. Cambios para los archivos de tu rama `lyla`
+
+Dado que estás por subir tus configuraciones a tu rama, revisé los archivos `.yml` y `.toml` que preparamos en prompts anteriores. Para que tu flujo de automatización de versiones funcione correctamente de acuerdo a lo que planteamos, debes realizar las siguientes modificaciones antes de hacer el *push*:
+
+* **Workflow de Auto-versionado (`.github/workflows/release.yml`)**:
+* **El problema:** El flujo utiliza la herramienta `semantic-release` para actualizar tu archivo de configuración y crear el tag del release en GitHub. Por defecto, GitHub Actions no tiene permisos para hacer *commits* ni *tags* en el repositorio.
+
+
+* **El cambio:** Debes agregar el permiso de escritura explícito a nivel del flujo. Inserta `permissions: contents: write` debajo de los eventos `on:`.
+
+
+* **Plantilla de Issue (`.github/ISSUE_TEMPLATE/tarea_desarrollo.yml`)**:
+* **El problema:** La plantilla que armamos asignará automáticamente la etiqueta `dev work` a los nuevos Issues creados.
+
+
+* **El cambio:** Asegúrate de ir a la pestaña "Issues" -> "Labels" en tu repositorio y crear manualmente la etiqueta `dev work` con anticipación. Si el *label* no existe previamente, la plantilla de GitHub no podrá aplicarlo.
+
+
+* **Configuración del Proyecto (`pyproject.toml`)**:
+* **El problema:** Definimos la versión base (`version = "0.1.0"`) y las rutas de test (`testpaths = ["src/tests"]`), pero la herramienta de `semantic-release` que pusimos en el workflow necesita saber exactamente qué archivo modificar para escalar la versión.
+
+
+* **El cambio:** Añade el siguiente bloque al final de tu `pyproject.toml` para conectar la herramienta del workflow con tu configuración:
+```toml
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+
+```
+
+
+
+
+
+### 3. Registro para tu AI_LOG.md
+
+Siguiendo fielmente el ejemplo de formato y las instrucciones que me proporcionaste para documentar, aquí tienes el registro de esta interacción para que lo añadas a tu bitácora:
+
+```markdown
+### Lyla Alice - Prompt # 9
+##### IA utilizada: Gemini
+**Prompt del integrante completo:**
+El Project ya fue creado. Con los AI_LOGs, me refería a que los seguiremos añadiendo sin importar que, recuerda que cada prompt y respuesta que tú me proporciones deben ir registradas, sin importar que, así mantenemos la transparencia del proyecto. La siguiente tarea que debes cumplir: revisa las branches del repositorio (a excpeción de main), analiza cada una, hallando sus fortalezas y debilidades, y para la mía, la rama lyla, por favor dime qué cambios debo hacer a los archivos subidos, especialmente si son .yml o de configuración.
+
+**Respuesta de la IA completa:**
+Te informé que al revisar el repositorio EDSIA-Beyond en GitHub, actualmente solo existe la rama `main` con los archivos iniciales, por lo que nadie ha hecho push de sus ramas todavía y no es posible evaluarlas. Para tu rama `lyla`, te sugerí tres cambios específicos en tus archivos antes de subirlos: 1) Agregar `permissions: contents: write` a `release.yml` para que el bot pueda crear versiones automáticamente, 2) Crear manualmente la etiqueta `dev work` en GitHub para que `tarea_desarrollo.yml` no falle, y 3) Añadir el bloque `[tool.semantic_release]` en `pyproject.toml` para que el workflow sepa cómo y dónde leer la versión del proyecto.
+**Qué se aceptó:** [Pendiente de llenar por Lyla]
+**Qué se denegó:** [Pendiente de llenar por Lyla]
+**Qué se modificó:** [Pendiente de llenar por Lyla]
+````
+
+**Qué se aceptó:** Modificaciones a los archivos mencionados
+**Qué se denegó:** N/A
+**Qué se modificó:** Log generado por la IA
+
+---
+
+# Lyla Alice - Prompt #9
+### IA Utilizada: Gemini
+**Prompt del integrante completo:**
+> El Project ya fue creado. Con los AI_LOGs, me refería a que los seguiremos añadiendo sin importar que, recuerda que cada prompt y respuesta que tú me proporciones deben ir registradas, sin importar que, así mantenemos la transparencia del proyecto. La siguiente tarea que debes cumplir: revisa las branches del repositorio (a excpeción de main), analiza cada una, hallando sus fortalezas y debilidades, y para la mía, la rama lyla, por favor dime qué cambios debo hacer a los archivos subidos, especialmente si son .yml o de configuración.
+
+**Respuesta de la IA completa:**
+```bash
+¡Hola, Lyla! Entendido. Dejaremos el registro del `AI_LOG.md` para la próxima actualización y no tocaremos nada de código ni flujos en el repositorio por ahora, tal como lo solicitas.
+
+Aquí tienes los dos entregables solicitados:
+
+### 1. Análisis del documento "EDSIA Beyond"
+
+He leído el archivo "EDSIA Beyond" y he guardado la información en mi memoria para usarla como nuestra guía base cuando tomemos las decisiones del proyecto. Aquí tienes mi análisis de su contenido:
+
+* El documento establece las bases de la competencia mediante un desafío llamado "De la idea a producción en veintiún días".
+
+
+* Este desafío es parte integral del programa "DE LA ELECTRÓNICA AL DESARROLLO DE SOFTWARE CON IA".
+
+
+* En las instrucciones se detalla de qué trata el proyecto y establece un "piso profesional" con un estándar exigido obligatorio para todos los participantes.
+
+
+* Cuenta con un calendario estructurado que divide el desarrollo en fases, estipulando qué debe suceder en cada fecha.
+
+
+* La fecha límite de cierre para el paquete de entrega es el 15 de septiembre.
+
+
+* El sistema de evaluación califica sobre un total de 100 puntos, los cuales se dividen en cinco dimensiones a evaluar.
+
+
+* Finalmente, el documento define reglas de oro inquebrantables y detalla la fase de premiación.
+
+
+
+### 2. Asistencia con la Issue #3 (¿Qué es el "nuevo proyecto"?)
+
+Puedes estar completamente tranquila: **Martin no te está pidiendo crear un repositorio nuevo desde cero.**
+
+En el vocabulario de GitHub, la función **"Project" (Proyecto)** no se refiere al código, sino a su herramienta nativa de organización ágil (una alternativa a plataformas como Trello o Jira).
+
+Lo que Martin te está solicitando es que habilites un **Project Board** (Tablero Kanban). Probablemente te lo pide a ti porque, por la configuración de permisos de la cuenta o repositorio, él no cuenta con el nivel de "Owner/Administrador" necesario para crear este tablero y vincularlo al repositorio actual.
+
+**¿Por qué menciona la plantilla "Team Planning"?**
+GitHub Projects ofrece plantillas iniciales, y "Team Planning" es ideal porque ya viene preconfigurada con el sistema de automatización que menciona Martin. Esto permitirá que cuando, por ejemplo, tú abras un Pull Request (PR) y vincules una Issue, la "tarjeta" en el tablero se mueva automáticamente de la columna *To Do* a *In Progress*, y cuando se fusione a la rama main, se pase automáticamente a *Done*.
+
+**Sobre tu sugerencia de los Assignees (Asignados):**
+Tu comentario en la Issue es **totalmente acertado**. Crear etiquetas o *tags* manuales (como `dev: lyla`) para saber quién está haciendo qué es una mala práctica que ensucia el sistema. Las *labels* deben ser exclusivamente para clasificar la tarea (`bug`, `backend`, `Must Have`). Al utilizar la herramienta **Assignees** de GitHub (como sugieres), el rostro o avatar del desarrollador aparecerá automáticamente en la tarjeta del Project Board, lo que mantiene el entorno limpio y visualmente amigable.
+
+Cuando estén listos tras su reunión, si deseas que te guíe paso a paso sobre cómo crear ese tablero desde la pestaña "Projects" de tu cuenta y cómo enlazarlo al repositorio actual para que las tarjetas se muevan solas, ¡solo dímelo! Quedo a la espera de lo que decidan como equipo mañana.
+```
+**Qué se aceptó:** La creación del Project y analisis del curso
+**Qué se denegó:** N/A
+**Qué se modificó:** N/A
+
+---
+
 # Lyla Alice - Prompt #8
 ### IA utilizada: Gemini
 **Prompt del integrante completo:** 
@@ -1607,9 +1737,9 @@ jobs:
     * Qué se denegó: [Pendiente de llenar por Lyla]
     * Qué se modificó: [Pendiente de llenar por Lyla]
 ```
-* Qué se aceptó: Ambos archivos `.yml`, junto a la instrospección de los integrantes
-* Qué se denegó: N/A
-* Qué se modificó: N/A
+**Qué se aceptó:** Ambos archivos `.yml`, junto a la instrospección de los integrantes
+**Qué se denegó:** N/A
+**Qué se modificó:** N/A
 
 ---
 
