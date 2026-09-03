@@ -1529,6 +1529,86 @@ show_missing = true
 
 ---
 
+# Lyla Alice - Prompt #12
+### IA Utilizada: Gemini
+**Prompt del integrante completo:**
+> Mis disculpas, no había actualizado tus fuentes!! Puedes volver a revisar?
+
+**Respuesta de la IA completa:**
+````bash
+¡Tienes toda la razón y te ofrezco una disculpa! Al revisar tus fuentes actualizadas, puedo confirmar que el repositorio `EDSIA-Beyond` efectivamente ya se encuentra alojado dentro de tu nueva organización `CherryStraw5337`. Además, tanto tú como Martin ya figuran como colaboradores activos en él.
+
+Sabiendo esto, el misterio de por qué Martin sigue bloqueado para crear el *Project Board* (incluso si le diste permisos de administrador en el repositorio) se reduce a cómo funcionan las organizaciones en GitHub:
+
+**¿Por qué Martin no puede crear el Project Board?**
+
+1. **Falta de aceptación de la invitación:** Mencionas que ya les enviaste la invitación. Hasta que Martin y Jose no entren a su correo o a GitHub y acepten formalmente unirse a la organización `CherryStraw5337`, la plataforma no les reconocerá ningún privilegio.
+2. **Permisos de Organización vs. Permisos de Repositorio:** En GitHub, los "Projects" (como el tablero Team Planning) le pertenecen a la **Organización**, no al repositorio. Darle a alguien rol de "Admin" dentro del *código del repositorio* no le otorga automáticamente el permiso de crear *Proyectos a nivel Organización*.
+
+**¿Cómo lo solucionamos?**
+Tienes tres caminos excelentes para destrabar esto, elige el que mejor se adapte a su dinámica de equipo:
+
+* **Solución A (La más rápida y recomendada):** Ya que tú eres la "Owner" (Dueña) de la organización, ve a la pestaña "Projects" de `CherryStraw5337`, crea tú misma el nuevo proyecto seleccionando la plantilla "Team Planning" y vincula el repositorio `EDSIA-Beyond`. Una vez creado, entra a los *Settings* del tablero y dales acceso de "Admin" a Martin y Jose directamente sobre ese tablero.
+* **Solución B (Dar permisos de creación):** Ve a los *Settings* de la organización `CherryStraw5337` (no del repositorio, sino de la org), busca la sección **Projects -> Member privileges** y asegúrate de que la opción para que los miembros puedan crear proyectos esté activada. (Aun así, Martin deberá aceptar la invitación primero).
+* **Solución C (Ascenso a Owners):** Dado que es un proyecto escolar y son un equipo de confianza de 3 personas, puedes ir a los *Settings* de la organización, sección **People**, y cambiarles el rol de "Member" a "Owner". Esto les dará control absoluto sobre toda la organización, eliminando cualquier fricción futura con permisos.
+
+¡Cualquiera de estas opciones resolverá el problema de la Issue #3 al instante!
+
+Siguiendo tus instrucciones estrictas sobre el registro de nuestras interacciones, aquí tienes el formato completo para que lo añadas a tu `AI_LOG.md`:
+
+---
+
+### Lyla Alice - Prompt #10
+
+##### IA utilizada: Gemini
+
+**Prompt del integrante completo:**
+Mis disculpas, no había actualizado tus fuentes!! Puedes volver a revisar? Creé una organización (CherryStraw5337) para poder darles admin a los dos dentro del repo del proyecto únicamente, esto fue antes del último comentario de la Issue. Ayudame a solucionarlo. Ya les envié igualmente una invitción a la organización
+**Respuesta de la IA completa:**
+Se verificó en las fuentes actualizadas que el repositorio efectivamente ya se encuentra dentro de la organización CherryStraw5337. Se explicó que el bloqueo ocurre porque en GitHub los "Projects" pertenecen a la organización y no al repositorio, por lo que ser administrador del repositorio no otorga permisos automáticos para crear tableros a nivel organización. Se propusieron soluciones: asegurar que los compañeros acepten la invitación, ajustar los permisos de creación de proyectos en la configuración de la organización, ascenderlos a "Owners", o que Lyla (como dueña) cree el tablero y se los comparta.
+**Qué se aceptó:** La corrección sobre la ubicación actual del repositorio en la organización y la solicitud de ayuda para solucionar el problema de los permisos.
+**Qué se denegó:** N/A.
+**Qué se modificó:** Se ajustó la explicación del problema, aclarando que la barrera actual es la diferencia entre permisos de repositorio y permisos de proyectos de organización en GitHub.
+````
+
+---
+
+# Lyla Alice - Prompt #11
+### IA Utilizada: Gemini
+**Prompt del integrante completo:**
+> Estamos teniendo problemas con los permisos del repositorio, podrías verificar la Issue #3? Otra informacipon que te doy: Creé una organización (CherryStraw5337) para poder darles admin a los dos dentro del repo del proyecto únicamente, esto fue antes del último comentario de la Issue. Ayudame a solucionarlo. Ya les envié igualmente una invitción a la organización
+
+**Respuesta de la IA completa:**
+````bash
+Entiendo la confusión con los permisos; el bloqueo que menciona Martin en la Issue #3 tiene una explicación estructural sencilla sobre cómo GitHub maneja las cuentas y las organizaciones.
+
+**El origen del bloqueo**
+
+* Martin te solicitó crear el Project Board porque, por la configuración de permisos, él no cuenta con el nivel de Administrador/Owner necesario para crearlo y vincularlo al repositorio actual.
+
+
+* Tu iniciativa de crear la organización `CherryStraw5337` es excelente, pero actualmente el repositorio `EDSIA-Beyond` sigue alojado bajo tu cuenta personal (`lylaxtraw/EDSIA-Beyond`).
+
+
+* Como el código no se encuentra dentro de la nueva organización, los permisos de administrador que les otorgues a tus compañeros allí no tendrán efecto sobre tu repositorio personal.
+
+**Rutas de solución**
+
+* **Opción A (Migrar a la Organización):** Si quieres aprovechar la organización que ya creaste, debes transferir el repositorio. Ve a la pestaña *Settings* de tu repositorio `EDSIA-Beyond`, baja hasta la "Danger Zone" y selecciona *Transfer repository*. Escribe `CherryStraw5337` como destino. Una vez que el repositorio viva ahí, los permisos de administrador de la organización funcionarán perfectamente y Martin podrá crear el tablero.
+* **Opción B (Quedarte en tu cuenta personal):** Si decides mantener el repositorio bajo tu usuario (`lylaxtraw`), ignora la organización. Ve a *Settings* > *Collaborators* en tu repositorio y edita los permisos de Martin y Jose para otorgarles el rol de "Admin" directamente.
+* **Opción C (Tú creas el tablero):** Como administradora actual, puedes crear el Project Board tú misma desde la pestaña "Projects", seleccionar la plantilla "Team Planning" y enlazarlo al repositorio para que las tarjetas se muevan solas.
+
+
+
+¿Prefieres migrar el repositorio a la nueva organización para centralizar todo, o prefieres simplemente elevarles los permisos dentro de tu cuenta personal?
+````
+
+**Qué se aceptó:** N/A
+**Qué se rechazó:** Las proposiciones sugeridas por falta de información
+**Qué se modificó:** El enlace al repositorio en las fuentes de la Notebook
+
+---
+
 # Lyla Alice - Prompt #10
 ### IA Utilizada: Gemini
 **Prompt del integrante completo:**
