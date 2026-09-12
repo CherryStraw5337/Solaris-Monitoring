@@ -7,7 +7,7 @@ import requests
 # Asegúrate de ajustar esta URL al endpoint real de tu API cuando lo construyas
 API_URL = "http://localhost:8000/api/v1/lecturas"
 
-def generar_lectura(punto_id, energia_acumulada):
+def generar_lectura(punto_id, energia_acumulada) -> None:
     # Generar métricas realistas para un panel solar
     voltaje = round(random.uniform(30.0, 45.0), 2)
     corriente = round(random.uniform(5.0, 10.0), 2)

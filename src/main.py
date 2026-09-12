@@ -32,7 +32,7 @@ def get_update_date() -> str:
 
 
 @app.get("/health")
-def health_check():
+def health_check() -> None:
     update_date = get_update_date()
     api_status = "operational" if update_date != "Configuración inválida" else "degraded"
     message = (
@@ -48,6 +48,6 @@ def health_check():
     }
 
 @app.post("/api/v1/lecturas")
-def recibir_lectura(lectura: LecturaPayload):
+def recibir_lectura(lectura: LecturaPayload) -> None:
     # TODO: Integrar inserción a la base de datos PostgreSQL con SQLAlchemy
     return {"message": "Lectura recibida exitosamente", "data": lectura}

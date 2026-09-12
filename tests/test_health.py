@@ -1,7 +1,7 @@
 from main import health_check
 
 
-def test_health_uses_issue_update_date(monkeypatch):
+def test_health_uses_issue_update_date(monkeypatch) -> None:
     monkeypatch.setenv("UPDATE_DATE", "2026-09-12")
 
     assert health_check() == {
@@ -11,7 +11,7 @@ def test_health_uses_issue_update_date(monkeypatch):
     }
 
 
-def test_health_reports_invalid_update_date(monkeypatch):
+def test_health_reports_invalid_update_date(monkeypatch) -> None:
     monkeypatch.setenv("UPDATE_DATE", "12/09/2026")
 
     result = health_check()
