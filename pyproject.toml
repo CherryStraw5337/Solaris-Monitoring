@@ -20,7 +20,7 @@ warn_redundant_casts = true
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-testpaths = ["src/tests"]
+testpaths = ["tests"]
 
 [tool.coverage.run]
 source = ["src"]

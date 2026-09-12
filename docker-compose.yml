@@ -1,22 +1,20 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
-    container_name: edsia_postgres
+    container_name: solaris-monitoring_db
     restart: always
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin_password
       POSTGRES_DB: edsia_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   api:
     build: .
-    container_name: edsia_api
+    container_name: solaris-monitoring_api
     restart: always
     ports:
       - "8000:8000"
@@ -24,6 +22,7 @@ services:
       - db
     environment:
       - DATABASE_URL=postgresql://admin:admin_password@db:5432/edsia_db
+      - UPDATE_DATE=${UPDATE_DATE:-No definida}
     volumes:
       - ./src:/app/src
 

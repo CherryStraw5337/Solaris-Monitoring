@@ -17,6 +17,14 @@ body:
       description: Lista los requerimientos exactos para que este Issue se considere terminado.
     validations:
       required: true
+  - type: input
+    id: update_date
+    attributes:
+      label: Fecha de actualización
+      description: Indica la fecha que debe mostrar /health cuando esta tarea se publique. Usa el formato YYYY-MM-DD.
+      placeholder: "2026-09-12"
+    validations:
+      required: true
   - type: dropdown
     id: moscow
     attributes:
