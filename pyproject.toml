@@ -27,7 +27,7 @@ testpaths = ["tests"]
 addopts = "-v --strict-markers"
 
 pythonpath = ["src"]
-testpaths = ["src/tests"]
+testpaths = ["tests"]
 
 
 [tool.coverage.run]
