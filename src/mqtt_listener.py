@@ -10,7 +10,7 @@ from utils.models import Reading  # Importante para instanciar el objeto de lect
 # Credenciales de tu HiveMQ Cloud
 MQTT_BROKER = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud"
 MQTT_PORT = 8883
-MQTT_USER = "JoseB"       # Usuario corregido
+MQTT_USER = "test"       # Usuario corregido
 MQTT_PASSWORD = "13422004"   # Contraseña de tu usuario
 MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"
 

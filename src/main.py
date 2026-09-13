@@ -4,18 +4,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from db import engine  # Importa el engine de la base de datos
+from utils.models import Base  # Importa la base de modelos SQLAlchemy
 from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
 from utils.routers import cells, health, readings
-
-# Importa la función que inicializa tu cliente MQTT desde tu archivo externo
-# (Ajusta el nombre del archivo 'mqtt_listener' si lo llamaste de otra forma)
 from mqtt_listener import start_mqtt_client
 
 API_PREFIX = "/api/v1"
 PUBLIC_DIR = Path(__file__).resolve().parent / "public"
 
-# Almacenar Settings globalmente para usarlo en dependencias
 _current_settings: Settings | None = None
 
 
@@ -38,7 +36,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         version=resolved.api_version,
     )
     
-    # allow_credentials debe ser False mientras el origen sea comodín
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -52,12 +49,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(cells.router, prefix=API_PREFIX)
     app.include_router(readings.router, prefix=API_PREFIX)
     
-    # Evento de inicio para arrancar tu listener MQTT externo en segundo plano
     @app.on_event("startup")
     def startup_event():
+        # Crea las tablas automáticamente (soluciona el error de "no such table")
+        Base.metadata.create_all(bind=engine)
+        # Arranca tu listener MQTT en segundo plano
         start_mqtt_client()
 
-    # Debe montarse al final: un mount en "/" captura toda ruta no registrada antes.
     app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="landing")
     return app
 
