@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 
 MQTT_BROKER = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud"
 MQTT_PORT = 8883
-MQTT_USER = "JoseB"
+MQTT_USER = "test"
 MQTT_PASSWORD = "13422004"
 MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"
 

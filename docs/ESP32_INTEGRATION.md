@@ -289,7 +289,7 @@ const int ADC_MAX = 4095;
 const char* mqtt_server = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud";
 const int MQTT_PORT = 8883; // CORREGIDO: Puerto 8883 obligatorio para PubSubClient con TLS
 
-const char* MQTT_USER = "JoseB"; 
+const char* MQTT_USER = "test"; 
 const char* MQTT_PASSWORD = "13422004"; 
 
 const char* MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage";
@@ -362,10 +362,16 @@ void send_reading_mqtt() {
     int raw_adc = analogRead(ADC_PIN);
     float voltage = (raw_adc / (float)ADC_MAX) * REF_VOLTAGE;
 
-    Serial.printf("ADC Raw: %d, Voltaje: %.2f V\n", raw_adc, voltage);
+    // Calcula el porcentaje de eficiencia basado en tu voltaje de referencia
+    float efficiency = (voltage / REF_VOLTAGE) * 100.0;
+    if (efficiency > 100.0) efficiency = 100.0; // Límite máximo de seguridad
 
+    Serial.printf("ADC Raw: %d, Voltaje: %.2f V, Eficiencia: %.1f%%\n", raw_adc, voltage, efficiency);
+
+    // Agregamos "efficiency_percentage" al JSON que viaja al broker
     String payload = "{\"cell_id\":" + String(CELL_ID) +
-                     ",\"voltage_measured\":" + String(voltage, 2) + "}";
+                     ",\"voltage_measured\":" + String(voltage, 2) +
+                     ",\"efficiency_percentage\":" + String(efficiency, 2) + "}";
 
     if (client.publish(MQTT_TOPIC, payload.c_str())) {
         Serial.println("✓ Paquete JSON publicado en HiveMQ");

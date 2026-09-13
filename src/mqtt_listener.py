@@ -1,18 +1,19 @@
+from __future__ import annotations
 import json
+import random
 import paho.mqtt.client as mqtt
 from sqlalchemy.orm import Session
 from db import SessionLocal  # Importa tu sesión de base de datos
 from utils.repositories.reading_repo import SqlAlchemyReadingRepository
-from utils.services.reading_service import ReadingService
+from utils.models import Reading  # Importante para instanciar el objeto de lectura
 
 # Credenciales de tu HiveMQ Cloud
 MQTT_BROKER = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud"
 MQTT_PORT = 8883
-MQTT_USER = "JoseB"       # El mismo usuario que creaste en HiveMQ
-MQTT_PASSWORD = "13422004"   # La contraseña de ese usuario
+MQTT_USER = "JoseB"       # Usuario corregido
+MQTT_PASSWORD = "13422004"   # Contraseña de tu usuario
 MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"
 
-# CORREGIDO: Firma compatible con CallbackAPIVersion.VERSION2
 def on_connect(client, userdata, flags, reason_code, properties=None):
     if reason_code == 0:
         print("Conectado exitosamente al broker MQTT desde FastAPI")
@@ -29,16 +30,26 @@ def on_message(client, userdata, msg):
         cell_id = data.get("cell_id")
         voltage = data.get("voltage_measured")
         
-        print(f"Mensaje MQTT recibido -> Celda: {cell_id}, Voltaje: {voltage}V")
+        # Respaldo automático de eficiencia si el ESP32 no la manda todavía
+        efficiency = data.get("efficiency_percentage")
+        if efficiency is None:
+            max_voltage = 3.3
+            efficiency = round((voltage / max_voltage) * 100, 2) if voltage <= max_voltage else 100.0
+        
+        print(f"Mensaje MQTT recibido -> Celda: {cell_id}, Voltaje: {voltage}V, Eficiencia: {efficiency}%")
 
-        # 2. Abrir una sesión de base de datos e insertar la lectura usando tus servicios existentes
+        # 2. Abrir una sesión de base de datos e insertar la lectura
         db: Session = SessionLocal()
         try:
-            # Aquí llamas a tu repositorio o servicio de lecturas ya programado
             reading_repo = SqlAlchemyReadingRepository(db)
-            # Guarda el registro en la base de datos PostgreSQL de Render
-            reading_repo.create_reading(cell_id=cell_id, voltage=voltage)
-            db.commit()
+            
+            nueva_lectura = Reading(
+                cell_id=cell_id, 
+                voltage_measured=voltage,
+                efficiency_percentage=efficiency
+            )
+            reading_repo.add(nueva_lectura)
+            
             print("✓ Lectura guardada en la base de datos exitosamente")
         except Exception as e:
             db.rollback()
@@ -52,7 +63,6 @@ def on_message(client, userdata, msg):
 def start_mqtt_client():
     try:
         # Generar un ID único para el cliente de Python para evitar bloqueos del broker
-        import random
         client_id = "FastAPI-Subscriber-" + str(random.randint(0, 0xffff))
         
         client = mqtt.Client(client_id=client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
@@ -70,3 +80,4 @@ def start_mqtt_client():
         client.loop_start()
     except Exception as e:
         print(f"✗ Error crítico al iniciar el cliente MQTT: {e}")
+
