@@ -9,6 +9,10 @@ from sqlalchemy.pool import StaticPool
 
 from db import Base, get_db
 from main import create_app
+from utils.config import Settings
+
+# API key para tests
+TEST_API_KEY = "test-api-key-12345"
 
 
 @pytest.fixture
@@ -46,7 +50,17 @@ def app(engine: Engine) -> FastAPI:
         finally:
             session.close()
 
-    application = create_app()
+    # Configurar con API key de test
+    settings = Settings.from_env(
+        {
+            "DATABASE_URL": "sqlite://",
+            "ENVIRONMENT": "testing",
+            "API_TITLE": "Test API",
+            "API_VERSION": "1.0.0",
+            "DEVICE_API_KEY": TEST_API_KEY,
+        }
+    )
+    application = create_app(settings)
     application.dependency_overrides[get_db] = override_get_db
     return application
 
@@ -67,6 +81,7 @@ def created_cell(client: TestClient) -> dict[str, object]:
             "rated_voltage": 5.0,
             "efficiency_threshold": 80.0,
         },
+        headers={"X-API-Key": TEST_API_KEY},
     )
     assert response.status_code == 201
     payload: dict[str, object] = response.json()

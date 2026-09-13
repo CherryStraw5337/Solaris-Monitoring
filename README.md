@@ -1,15 +1,18 @@
 # Solaris Monitoring
 
 API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia, detección de anomalías y soporte para dispositivos IoT.
+[![CI/CD](https://github.com/CherryStraw5337/Solaris-Monitoring/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/CherryStraw5337/Solaris-Monitoring/actions/workflows/ci-cd.yml)
 
 ## Características
 
-- API REST con FastAPI.
+- API REST con FastAPI con autenticación por API key (X-API-Key).
 - Persistencia con SQLAlchemy y migraciones Alembic.
 - PostgreSQL en Docker y SQLite para desarrollo y pruebas.
 - Arquitectura separada por routers, servicios, repositorios, esquemas y dominio.
 - Panel HTML servido por `/` y actualizado con el estado de `/health`.
 - CI/CD con Ruff, Mypy, Pytest, cobertura mínima del 90 %, migraciones y build Docker.
+- Endpoints protegidos para escritura (POST/PUT/DELETE) con validación de API key.
+- Endpoints públicos para lectura (GET) sin autenticación.
 
 ## Inicio rápido
 
@@ -38,26 +41,62 @@ La API utiliza `DATABASE_URL`; consulta `.env.example` para las variables dispon
 
 ```text
 src/
-├── main.py                 # Aplicación FastAPI y registro de routers
+├── main.py                 # Aplicación FastAPI, gestión global de settings y registro de routers
 ├── db.py                   # Motor, sesión y base SQLAlchemy
 └── utils/
+    ├── config.py           # Configuración centralizada y validación de DEVICE_API_KEY
+    ├── dependencies.py     # Inyección de dependencias (verify_api_key, etc.)
+    ├── clock.py            # Utilidades de fecha y hora
+    ├── exception_handlers.py # Manejadores de excepciones personalizados
     ├── domain/             # Reglas de eficiencia y anomalías
     ├── models/             # Modelos SQLAlchemy
-    ├── repositories/       # Persistencia
-    ├── routers/            # Endpoints HTTP, incluido /health
-    ├── schemas/            # Contratos Pydantic
-    ├── services/           # Casos de uso
-    └── public/index.html   # Panel de estado
+    ├── repositories/       # Capa de persistencia
+    ├── routers/            # Endpoints HTTP (/health, /api/v1/cells, /api/v1/readings)
+    ├── schemas/            # Esquemas Pydantic (contratos de entrada/salida)
+    ├── services/           # Lógica de negocio y casos de uso
+    └── public/
+        └── index.html      # Panel de estado HTML
+
+tests/
+├── conftest.py             # Fixtures compartidas de pytest
+├── fakes.py                # Objetos mock para pruebas
+├── test_smoke.py           # Pruebas de humo
+├── integration/            # Tests de integración de endpoints
+└── unit/                   # Tests unitarios de servicios y utilidades
+
+docs/
+├── API.md                  # Documentación de la API REST
+├── DEPLOYMENT.md           # Guía de despliegue en Render y Docker
+├── ESP32_INTEGRATION.md    # Integración con dispositivos IoT ESP32
+├── adr/                    # Architecture Decision Records
+└── ai_logs/                # Historiales de prompts y decisiones de IA
+    └── AI_LOG_Lyla.md      # Log de prompts de Lyla Alice (Issues #12, #14)
 ```
 
 ## Endpoints
 
+### Públicos (sin autenticación)
 - `GET /`: panel de estado de Solaris Monitoring.
 - `GET /health`: estado de la API y fecha de actualización configurada.
-- `GET /docs`: documentación OpenAPI.
-- `POST /api/v1/cells` y `GET /api/v1/cells`: gestión de celdas.
-- `POST /api/v1/readings` y `GET /api/v1/readings`: recepción y consulta de lecturas.
-- `GET /api/v1/readings/cell/{cell_id}/summary`: resumen de eficiencia.
+- `GET /docs`: documentación OpenAPI con botón "Authorize" para pruebas.
+- `GET /api/v1/cells`: listado de celdas fotovoltaicas.
+- `GET /api/v1/readings`: listado de lecturas.
+- `GET /api/v1/readings/cell/{cell_id}/summary`: resumen de eficiencia de una celda.
+
+### Protegidos (requieren encabezado `X-API-Key`)
+- `POST /api/v1/cells`: registrar nueva celda (requiere API key).
+- `PUT /api/v1/cells/{cell_id}`: actualizar celda (requiere API key).
+- `DELETE /api/v1/cells/{cell_id}`: eliminar celda (requiere API key).
+- `POST /api/v1/readings`: registrar lectura de celda (requiere API key).
+
+### Autenticación
+La API usa esquema de autenticación por encabezado `X-API-Key` (APIKeyHeader de FastAPI). Para utilizar endpoints protegidos:
+
+```bash
+curl -H "X-API-Key: your-api-key" -X POST http://localhost:8000/api/v1/cells -d '...'
+```
+
+La variable de entorno `DEVICE_API_KEY` debe configurarse. En producción, es obligatoria.
 
 `UPDATE_DATE` acepta fechas con formato `YYYY-MM-DD`. Si la configuración es inválida, `/health` informa estado `degraded` y el panel lo refleja automáticamente.
 
@@ -81,7 +120,22 @@ El `Dockerfile` ejecuta las migraciones antes de iniciar Uvicorn. `render.yaml` 
 
 ## Contribución
 
-Usa ramas de trabajo, añade pruebas para los cambios y ejecuta las validaciones del CI antes de abrir un Pull Request. El uso de IA y las decisiones relevantes deben registrarse en [docs/ai_logs/AI_LOG_Lyla.md](docs/ai_logs/AI_LOG_Lyla.md) o en el log correspondiente al integrante.
+Usa ramas de trabajo, añade pruebas para los cambios y ejecuta las validaciones del CI antes de abrir un Pull Request.
+
+### Historial de Decisiones y Prompts de IA
+
+El proyecto documenta el uso de IA en la carpeta [docs/ai_logs/](docs/ai_logs/). Cada miembro del equipo mantiene un log con formato estándar:
+
+- **Nombre de integrante - Prompt #(número)**
+- **IA utilizada** (ej: GitHub Copilot Claude Haiku 4.5)
+- **Prompt completo del integrante**
+- **Respuesta de la IA**
+- **Qué se aceptó / modificó / denegó**
+
+**Logs actuales:**
+- [AI_LOG_Lyla.md](docs/ai_logs/AI_LOG_Lyla.md): Historial de implementación de autenticación por API key (Issues #12, #14) - 36 prompts documentados
+
+Antes de abrir un Pull Request, registra los prompts de IA relevantes siguiendo el formato anterior.
 
 ## Licencia
 

@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.0 (2026-09-13)
+
+### Features
+
+- Publicar landing y metadatos de despliegue
+  ([`ad981a9`](https://github.com/CherryStraw5337/Solaris-Monitoring/commit/ad981a99d9a3a53e581f45b1b1cef1948ceefcaa))
+
+
 ## v1.1.0 (2026-09-13)
 
 ### Features
