@@ -163,93 +163,216 @@ import json
 from machine import ADC, Pin
 
 # ===== Configuración =====
-SSID = "TU_SSID"
-PASSWORD = "TU_PASSWORD"
-API_URL = "http://solaris-monitoring-api.onrender.com"
-CELL_ID = 1
-ADC_PIN = 36  # GPIO 36 (ADC1_0)
-INTERVAL_SEC = 300  # 5 minutos
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <Arduino.h>
 
-# ===== Inicialización =====
-adc = ADC(Pin(ADC_PIN))
-adc.atten(ADC.ATTN_11DB)  # Full range 0-3.3V
+// ===== Configuración =====
+const char* SSID = "SSID";
+const char* PASSWORD = "PASSWORD";
+const char* API_URL = "https://solaris-monitoring-api.onrender.com";
+const int CELL_ID = 1;  // ID de la celda en la API
+const int ADC_PIN = 2;  // GPIO 2 (ADC1_CH2 para ESP32-C6)
+const int INTERVAL_MS = 10000; // 10 segundos (para pruebas rápidas)
 
-def connect_wifi():
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
+// Configuración de ADC
+const float REF_VOLTAGE = 3.3;
+const int ADC_MAX = 4095;
 
-    if not wlan.isconnected():
-        print(f"Conectando a {SSID}...")
-        wlan.connect(SSID, PASSWORD)
+unsigned long last_send = 0;
 
-        timeout = 20
-        while not wlan.isconnected() and timeout > 0:
-            time.sleep(1)
-            timeout -= 1
-            print(".", end="")
+void setup() {
+    Serial.begin(115200);
+    delay(2000);
 
-    if wlan.isconnected():
-        print(f"\n✓ WiFi conectado: {wlan.ifconfig()[0]}")
-        return True
-    else:
-        print("\n✗ Error: No se pudo conectar a WiFi")
-        return False
+    Serial.println("\n\nIniciando ESP32...");
+    connect_wifi();
+}
 
-def read_voltage():
-    """Lee voltaje del sensor ADC"""
-    raw = adc.read()
-    voltage = (raw / 4095.0) * 3.3
-    return round(voltage, 2)
+void loop() {
+    if (WiFi.status() != WL_CONNECTED) {
+        connect_wifi();
+    }
 
-def send_reading(voltage):
-    """Envía lectura a la API"""
-    try:
-        url = f"{API_URL}/api/v1/readings"
-        payload = json.dumps({
-            "cell_id": CELL_ID,
-            "voltage_measured": voltage
-        })
+    // Enviar cada 10 segundos
+    if (millis() - last_send > INTERVAL_MS) {
+        send_reading();
+        last_send = millis();
+    }
 
-        headers = {"Content-Type": "application/json"}
-        response = urequests.post(url, data=payload, headers=headers)
+    delay(1000);
+}
 
-        if response.status_code == 201:
-            print("✓ Lectura enviada")
-            print(f"  Response: {response.json()}")
-        else:
-            print(f"✗ Error: {response.status_code}")
-            print(f"  Response: {response.text}")
+void connect_wifi() {
+    Serial.printf("Conectando a WiFi: %s\n", SSID);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(SSID, PASSWORD);
 
-        response.close()
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+        delay(500);
+        Serial.print(".");
+        attempts++;
+    }
 
-    except Exception as e:
-        print(f"✗ Error de conexión: {e}")
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("\nWiFi conectado!");
+        Serial.print("IP: ");
+        Serial.println(WiFi.localIP());
+    } else {
+        Serial.println("\nError: No se pudo conectar a WiFi");
+    }
+}
 
-def main():
-    if not connect_wifi():
-        return
+void send_reading() {
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("WiFi desconectado, saltando lectura");
+        return;
+    }
 
-    print("Iniciando lecturas cada 5 minutos...")
+    // Leer voltaje
+    int raw_adc = analogRead(ADC_PIN);
+    float voltage = (raw_adc / (float)ADC_MAX) * REF_VOLTAGE;
 
-    while True:
-        try:
-            voltage = read_voltage()
-            print(f"Voltaje leído: {voltage} V")
-            send_reading(voltage)
+    Serial.printf("ADC Raw: %d, Voltaje: %.2f V\n", raw_adc, voltage);
 
-            print(f"Esperando {INTERVAL_SEC} segundos...\n")
-            time.sleep(INTERVAL_SEC)
+    // Crear JSON
+    String payload = "{\"cell_id\":" + String(CELL_ID) +
+                     ",\"voltage_measured\":" + String(voltage, 2) + "}";
 
-        except KeyboardInterrupt:
-            print("\nDetenido por usuario")
-            break
-        except Exception as e:
-            print(f"Error: {e}")
-            time.sleep(10)
+    // Enviar a API
+    HTTPClient http;
+    String url = String(API_URL) + "/api/v1/readings";
+    
+    http.begin(url);
+    http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS); // Permite seguir el 307
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("X-API-Key", "LLAVE DE ACCESO"); // <-- LLAVE DE SEGURIDAD AGREGADA
 
-if __name__ == "__main__":
-    main()
+    int httpCode = http.POST(payload);
+
+    if (httpCode == 201) {
+        Serial.println("✓ Lectura enviada exitosamente");
+        String response = http.getString();
+        Serial.println("Respuesta: " + response);
+    } else {
+        Serial.printf("✗ Error HTTP: %d\n", httpCode);
+        Serial.println("Payload: " + payload);
+    }
+
+    http.end();
+}
 ```
+"Codigo esp32 peticiones MQTT"
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <PubSubClient.h>
+#include <Arduino.h>
+
+// Aumenta el búfer MQTT para evitar cortes por desbordamiento con TLS
+#ifndef MQTT_MAX_PACKET_SIZE
+#define MQTT_MAX_PACKET_SIZE 512
+#endif
+
+// ===== Configuración de Red =====
+const char* SSID = "Megacable_2.4G_24DA";
+const char* PASSWORD = "B77cfMq13422004";
+
+// ===== Configuración Celda y ADC =====
+const int CELL_ID = 1; 
+const int ADC_PIN = 2; // GPIO 2 (ADC1_CH2 para ESP32-C6)
+const int INTERVAL_MS = 10000; // 10 segundos
+const float REF_VOLTAGE = 3.3;
+const int ADC_MAX = 4095;
+
+// ===== Configuración HiveMQ Cloud =====
+const char* mqtt_server = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud";
+const int MQTT_PORT = 8883; // CORREGIDO: Puerto 8883 obligatorio para PubSubClient con TLS
+
+const char* MQTT_USER = "JoseB"; 
+const char* MQTT_PASSWORD = "13422004"; 
+
+const char* MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage";
+
+WiFiClientSecure espClient;
+PubSubClient client(espClient);
+unsigned long last_send = 0;
+
+void setup() {
+    Serial.begin(115200);
+    delay(2000);
+
+    Serial.println("\n\nIniciando ESP32-C6 con HiveMQ Cloud...");
+    connect_wifi();
+    
+    espClient.setInsecure(); 
+    client.setServer(mqtt_server, MQTT_PORT);
+    
+    // AGREGA ESTA LÍNEA AQUÍ PARA AMPLIAR EL TIEMPO DE ESPERA A 60 SEGUNDOS:
+    client.setKeepAlive(60); 
+}
+
+void loop() {
+    if (WiFi.status() != WL_CONNECTED) {
+        connect_wifi();
+    }
+
+    if (!client.connected()) {
+        reconnect_mqtt();
+    }
+    client.loop(); // <- Esto debe ejecutarse constantemente sin bloqueos
+
+    if (millis() - last_send > INTERVAL_MS) {
+        send_reading_mqtt();
+        last_send = millis();
+    }
+}
+
+void connect_wifi() {
+    Serial.printf("Conectando a WiFi: %s\n", SSID);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(SSID, PASSWORD);
+
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\nWiFi conectado!");
+    Serial.print("IP: ");
+    Serial.println(WiFi.localIP());
+}
+
+void reconnect_mqtt() {
+    while (!client.connected()) {
+        Serial.print("Conectando a HiveMQ Cloud... ");
+        String clientId = "ESP32C6-" + String(random(0xffff), HEX);
+        
+        // El último número (60) es el Keep-Alive en segundos. Asegura que la sesión no muera rápido.
+        if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASSWORD)) {
+            Serial.println("✓ Conectado exitosamente al broker");
+            // Importante: re-suscribirse o asegurar el estado si fuera necesario
+        } else {
+            Serial.printf("✗ Falló, código de error (rc): %d. Reintentando en 5s...\n", client.state());
+            delay(5000);
+        }
+    }
+}
+
+void send_reading_mqtt() {
+    int raw_adc = analogRead(ADC_PIN);
+    float voltage = (raw_adc / (float)ADC_MAX) * REF_VOLTAGE;
+
+    Serial.printf("ADC Raw: %d, Voltaje: %.2f V\n", raw_adc, voltage);
+
+    String payload = "{\"cell_id\":" + String(CELL_ID) +
+                     ",\"voltage_measured\":" + String(voltage, 2) + "}";
+
+    if (client.publish(MQTT_TOPIC, payload.c_str())) {
+        Serial.println("✓ Paquete JSON publicado en HiveMQ");
+    } else {
+        Serial.println("✗ Error al publicar el mensaje");
+    }
+}
 
 **Instrucciones:**
 1. Instalar Thonny IDE
