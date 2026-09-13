@@ -32,9 +32,7 @@ class Settings:
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
         source: Mapping[str, str] = os.environ if env is None else env
         return cls(
-            database_url=normalize_database_url(
-                source.get("DATABASE_URL", DEFAULT_DATABASE_URL)
-            ),
+            database_url=normalize_database_url(source.get("DATABASE_URL", DEFAULT_DATABASE_URL)),
             environment=source.get("ENVIRONMENT", "development"),
             api_title=source.get("API_TITLE", DEFAULT_API_TITLE),
             api_version=source.get("API_VERSION", DEFAULT_API_VERSION),
