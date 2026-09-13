@@ -27,13 +27,26 @@ class Settings:
     environment: str = "development"
     api_title: str = DEFAULT_API_TITLE
     api_version: str = DEFAULT_API_VERSION
+    device_api_key: str | None = None
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
         source: Mapping[str, str] = os.environ if env is None else env
+        environment = source.get("ENVIRONMENT", "development")
+        device_api_key = source.get("DEVICE_API_KEY")
+
+        # En producción, la clave es obligatoria
+        if environment == "production" and not device_api_key:
+            msg = (
+                "DEVICE_API_KEY no está definida. En producción, debe configurarse como "
+                "variable de entorno secreta. Revisa docs/DEPLOYMENT.md para más información."
+            )
+            raise ValueError(msg)
+
         return cls(
             database_url=normalize_database_url(source.get("DATABASE_URL", DEFAULT_DATABASE_URL)),
-            environment=source.get("ENVIRONMENT", "development"),
+            environment=environment,
             api_title=source.get("API_TITLE", DEFAULT_API_TITLE),
             api_version=source.get("API_VERSION", DEFAULT_API_VERSION),
+            device_api_key=device_api_key,
         )

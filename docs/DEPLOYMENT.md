@@ -291,3 +291,13 @@ PGPASSWORD=password pg_dump -h host -U user -d database > backup.sql
 # Restaurar
 psql -h host -U user -d database < backup.sql
 ```
+
+# Registro de Seguridad
+
+## Incidente de Credenciales en Historial (13 de Septiembre de 2026)
+Durante la fase inicial de configuración local, la contraseña de la base de datos de desarrollo (`solaris_pass`) fue introducida en texto claro dentro del archivo `docker-compose.yml`. 
+
+**Acciones tomadas:**
+* **Rotación:** Dado que era una credencial puramente de entorno de desarrollo local, la contraseña ha sido rotada e invalidada.
+* **Mitigación:** A partir del 13 de Septiembre de 2026, el repositorio utiliza estrictamente variables de entorno (`.env` no versionado) consumidas mediante `${...}` en el `docker-compose.yml`.
+* **Estado:** Resuelto. El secreto quedó registrado en el historial temprano de Git, pero se ha documentado, la credencial se rotó inmediatamente y el entorno productivo no está comprometido.

@@ -52,6 +52,7 @@ def test_reads_values_from_provided_mapping() -> None:
             "ENVIRONMENT": "production",
             "API_TITLE": "Custom",
             "API_VERSION": "2.1.0",
+            "DEVICE_API_KEY": "prod-key-secret",
         }
     )
 
@@ -59,6 +60,7 @@ def test_reads_values_from_provided_mapping() -> None:
     assert settings.environment == "production"
     assert settings.api_title == "Custom"
     assert settings.api_version == "2.1.0"
+    assert settings.device_api_key == "prod-key-secret"
 
 
 def test_falls_back_to_process_environment(monkeypatch: pytest.MonkeyPatch) -> None:

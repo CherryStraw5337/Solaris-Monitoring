@@ -1,6 +1,7 @@
 # Solaris Monitoring
 
 API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia, detección de anomalías y soporte para dispositivos IoT.
+[![CI/CD](https://github.com/CherryStraw5337/Solaris-Monitoring/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/CherryStraw5337/Solaris-Monitoring/actions/workflows/ci-cd.yml)
 
 ## Características
 
