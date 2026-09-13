@@ -1,4 +1,4 @@
-# Guía de Deployment - EDSIA Beyond API
+# Guía de Deployment - Solaris Monitoring API
 
 ## Desarrollo Local con Docker
 
@@ -12,7 +12,7 @@
 ```bash
 # 1. Clonar repositorio
 git clone <repository-url>
-cd EDSIA-Beyond
+cd Solaris-Monitoring
 
 # 2. Crear archivo .env
 cp .env.example .env
@@ -71,7 +71,7 @@ cp .env.example .env
 
 ```bash
 # Modo desarrollo (auto-reload)
-uvicorn edsia_beyond.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn solaris_monitoring.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Ejecutar Tests
@@ -81,7 +81,7 @@ uvicorn edsia_beyond.main:app --reload --host 0.0.0.0 --port 8000
 pytest
 
 # Con reporte de cobertura
-pytest --cov=src/edsia_beyond --cov-report=html
+pytest --cov=src/solaris_monitoring --cov-report=html
 
 # Tests específicos
 pytest tests/test_cells.py -v
@@ -108,7 +108,7 @@ pytest tests/test_cells.py -v
 ### Paso 3: Crear Base de Datos PostgreSQL
 
 1. Click en **New** → **PostgreSQL**
-2. Nombre: `edsia-beyond-db`
+2. Nombre: `solaris-monitoring-db`
 3. Plan: **Starter**
 4. Render generará automáticamente `DATABASE_URL`
 
@@ -135,8 +135,8 @@ Monitorear progreso en Render Dashboard.
 ### Acceder a API en Producción
 
 ```
-https://edsia-beyond-api.onrender.com/health
-https://edsia-beyond-api.onrender.com/docs
+https://solaris-monitoring-api.onrender.com/health
+https://solaris-monitoring-api.onrender.com/docs
 ```
 
 ---
@@ -167,7 +167,7 @@ DATABASE_URL=postgresql+psycopg://user:pass@host:5432/db
 # Opcionales
 ENVIRONMENT=production
 DEBUG=False
-API_TITLE=EDSIA Beyond - Photovoltaic Monitor
+API_TITLE=Solaris Monitoring - Photovoltaic Monitor
 API_VERSION=1.0.0
 ```
 
@@ -199,7 +199,7 @@ alembic upgrade head
 ### Health Check
 
 ```bash
-curl https://edsia-beyond-api.onrender.com/health
+curl https://solaris-monitoring-api.onrender.com/health
 ```
 
 Debe retornar:

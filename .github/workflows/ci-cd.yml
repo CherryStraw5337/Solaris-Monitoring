@@ -1,8 +1,8 @@
-name: CI/CD Pipeline
+name: Solaris Monitoring CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev, lyla]
   pull_request:
     branches: [main]
 
@@ -24,14 +24,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: Lint (ruff)
-        run: ruff check src tests
+      - name: Lint (Ruff)
+        run: ruff check .
+
+      - name: Format (Ruff)
+        run: ruff format --check .
 
       - name: Type check (mypy)
         run: mypy src tests
 
       - name: Tests + coverage gate (>=90%)
-        run: pytest --cov=src/edsia_beyond --cov-report=term-missing --cov-report=xml
+        run: pytest --cov=src --cov-report=term-missing --cov-report=xml
 
       - name: Verify migrations apply from scratch
         env:
@@ -54,4 +57,4 @@ jobs:
         with:
           context: .
           push: false
-          tags: edsia-beyond:latest
+          tags: solaris-monitoring:latest

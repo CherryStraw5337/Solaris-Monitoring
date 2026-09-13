@@ -1,12 +1,12 @@
 from logging.config import fileConfig
 from typing import Any
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from edsia_beyond.config import Settings
-from edsia_beyond.db import UTCDateTime
-from edsia_beyond.models import Base
+from alembic import context
+from db import UTCDateTime
+from utils.config import Settings
+from utils.models import Base
 
 config = context.config
 

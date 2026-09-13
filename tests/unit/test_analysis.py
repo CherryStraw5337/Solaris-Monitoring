@@ -1,6 +1,6 @@
 import pytest
 
-from edsia_beyond.domain.analysis import (
+from utils.domain.analysis import (
     AnomalyDetector,
     CellSpec,
     CompositeAnomalyDetector,

@@ -1,7 +1,7 @@
 [project]
-name = "edsia-beyond"
+name = "solaris-monitoring"
 version = "0.1.0"
-description = "EDSIA Beyond project"
+description = "Solaris Monitoring project"
 requires-python = ">=3.12"
 
 [tool.ruff]
@@ -11,9 +11,6 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 exclude = [".venv", ".git", "__pycache__", "dist", "build", "alembic"]
-
-[tool.ruff.lint.isort]
-known-first-party = ["edsia_beyond"]
 
 [tool.mypy]
 python_version = "3.12"

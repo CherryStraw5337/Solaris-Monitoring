@@ -2,12 +2,10 @@ from datetime import timedelta
 
 from fastapi.testclient import TestClient
 
-from edsia_beyond.clock import utc_now
+from utils.clock import utc_now
 
 
-def post_reading(
-    client: TestClient, cell_id: object, voltage: float
-) -> dict[str, object]:
+def post_reading(client: TestClient, cell_id: object, voltage: float) -> dict[str, object]:
     response = client.post(
         "/api/v1/readings", json={"cell_id": cell_id, "voltage_measured": voltage}
     )
@@ -25,15 +23,11 @@ def test_create_returns_201_with_computed_efficiency(
     assert body["is_anomaly"] is False
 
 
-def test_create_flags_over_voltage(
-    client: TestClient, created_cell: dict[str, object]
-) -> None:
+def test_create_flags_over_voltage(client: TestClient, created_cell: dict[str, object]) -> None:
     assert post_reading(client, created_cell["id"], 7.0)["is_anomaly"] is True
 
 
-def test_create_flags_low_efficiency(
-    client: TestClient, created_cell: dict[str, object]
-) -> None:
+def test_create_flags_low_efficiency(client: TestClient, created_cell: dict[str, object]) -> None:
     body = post_reading(client, created_cell["id"], 2.0)
 
     assert body["efficiency_percentage"] == 40.0
@@ -72,9 +66,7 @@ def test_create_rejects_a_future_timestamp_with_422(
 
 
 def test_create_returns_404_for_an_unknown_cell(client: TestClient) -> None:
-    response = client.post(
-        "/api/v1/readings", json={"cell_id": 404, "voltage_measured": 4.5}
-    )
+    response = client.post("/api/v1/readings", json={"cell_id": 404, "voltage_measured": 4.5})
 
     assert response.status_code == 404
 
@@ -102,18 +94,14 @@ def test_create_rejects_non_positive_voltage_with_422(
     assert response.status_code == 422
 
 
-def test_list_returns_every_reading(
-    client: TestClient, created_cell: dict[str, object]
-) -> None:
+def test_list_returns_every_reading(client: TestClient, created_cell: dict[str, object]) -> None:
     post_reading(client, created_cell["id"], 4.5)
     post_reading(client, created_cell["id"], 4.6)
 
     assert len(client.get("/api/v1/readings").json()) == 2
 
 
-def test_list_honours_the_limit_query(
-    client: TestClient, created_cell: dict[str, object]
-) -> None:
+def test_list_honours_the_limit_query(client: TestClient, created_cell: dict[str, object]) -> None:
     for voltage in (4.1, 4.2, 4.3):
         post_reading(client, created_cell["id"], voltage)
 
@@ -158,9 +146,7 @@ def test_list_by_cell_returns_404_for_an_unknown_cell(client: TestClient) -> Non
     assert client.get("/api/v1/readings/cell/404").status_code == 404
 
 
-def test_summary_aggregates_the_period(
-    client: TestClient, created_cell: dict[str, object]
-) -> None:
+def test_summary_aggregates_the_period(client: TestClient, created_cell: dict[str, object]) -> None:
     post_reading(client, created_cell["id"], 4.0)
     post_reading(client, created_cell["id"], 5.0)
 

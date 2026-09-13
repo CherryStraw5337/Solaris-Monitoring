@@ -70,9 +70,7 @@ def test_get_returns_404_for_an_unknown_cell(client: TestClient) -> None:
 def test_update_recomputes_safe_voltage(
     client: TestClient, created_cell: dict[str, object]
 ) -> None:
-    response = client.put(
-        f"/api/v1/cells/{created_cell['id']}", json={"rated_voltage": 10.0}
-    )
+    response = client.put(f"/api/v1/cells/{created_cell['id']}", json={"rated_voltage": 10.0})
 
     assert response.status_code == 200
     assert response.json()["max_safe_voltage"] == 12.0
@@ -106,12 +104,8 @@ def test_delete_returns_404_for_an_unknown_cell(client: TestClient) -> None:
     assert client.delete("/api/v1/cells/404").status_code == 404
 
 
-def test_delete_cascades_to_readings(
-    client: TestClient, created_cell: dict[str, object]
-) -> None:
-    client.post(
-        "/api/v1/readings", json={"cell_id": created_cell["id"], "voltage_measured": 4.5}
-    )
+def test_delete_cascades_to_readings(client: TestClient, created_cell: dict[str, object]) -> None:
+    client.post("/api/v1/readings", json={"cell_id": created_cell["id"], "voltage_measured": 4.5})
 
     client.delete(f"/api/v1/cells/{created_cell['id']}")
 

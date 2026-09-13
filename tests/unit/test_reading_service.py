@@ -2,24 +2,24 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from edsia_beyond.clock import utc_now
-from edsia_beyond.domain.analysis import (
+from tests.fakes import InMemoryCellRepository, InMemoryReadingRepository, make_cell, make_reading
+from utils.clock import utc_now
+from utils.domain.analysis import (
     CompositeAnomalyDetector,
     LowEfficiencyAnomalyDetector,
     OverVoltageAnomalyDetector,
     RatioEfficiencyCalculator,
     ReadingAnalyzer,
 )
-from edsia_beyond.domain.errors import (
+from utils.domain.errors import (
     CellNotFoundError,
     InactiveCellError,
     NoReadingsInPeriodError,
     ReadingNotFoundError,
 )
-from edsia_beyond.repositories.protocols import CellLookup, ReadingRepository
-from edsia_beyond.schemas.reading import ReadingCreate
-from edsia_beyond.services.reading_service import ReadingService
-from tests.fakes import InMemoryCellRepository, InMemoryReadingRepository, make_cell, make_reading
+from utils.repositories.protocols import CellLookup, ReadingRepository
+from utils.schemas.reading import ReadingCreate
+from utils.services.reading_service import ReadingService
 
 
 def build_analyzer() -> ReadingAnalyzer:
@@ -70,9 +70,7 @@ def test_create_keeps_the_timestamp_reported_by_the_device() -> None:
     service = build_service(InMemoryCellRepository([make_cell()]))
     reported = utc_now() - timedelta(hours=3)
 
-    reading = service.create(
-        ReadingCreate(cell_id=1, voltage_measured=4.5, timestamp=reported)
-    )
+    reading = service.create(ReadingCreate(cell_id=1, voltage_measured=4.5, timestamp=reported))
 
     assert reading.timestamp == reported
 

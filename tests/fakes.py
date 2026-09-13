@@ -4,8 +4,8 @@ from collections.abc import Iterable, Mapping
 from datetime import datetime
 from typing import Any
 
-from edsia_beyond.clock import utc_now
-from edsia_beyond.models import PhotovoltaicCell, Reading
+from utils.clock import utc_now
+from utils.models import PhotovoltaicCell, Reading
 
 
 def make_cell(
@@ -71,9 +71,7 @@ class InMemoryCellRepository:
     def list_active(self) -> list[PhotovoltaicCell]:
         return [c for c in self._cells.values() if c.is_active]
 
-    def apply_changes(
-        self, cell: PhotovoltaicCell, changes: Mapping[str, Any]
-    ) -> PhotovoltaicCell:
+    def apply_changes(self, cell: PhotovoltaicCell, changes: Mapping[str, Any]) -> PhotovoltaicCell:
         for field, value in changes.items():
             setattr(cell, field, value)
         return cell

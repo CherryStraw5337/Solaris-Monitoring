@@ -68,4 +68,4 @@ docker-compose.override.yml
 .idea/
 *.sublime-project
 *.sublime-workspace
-edsia_beyond.db
+solaris_monitoring.db

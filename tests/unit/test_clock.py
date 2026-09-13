@@ -1,6 +1,6 @@
 from datetime import UTC, datetime, timedelta, timezone
 
-from edsia_beyond.clock import ensure_utc, utc_now
+from utils.clock import ensure_utc, utc_now
 
 
 def test_utc_now_is_timezone_aware() -> None:

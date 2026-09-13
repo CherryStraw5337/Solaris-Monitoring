@@ -3,9 +3,9 @@ from datetime import UTC, datetime, timedelta, timezone
 import pytest
 from pydantic import ValidationError
 
-from edsia_beyond.clock import utc_now
-from edsia_beyond.schemas.cell import CellCreate
-from edsia_beyond.schemas.reading import ReadingCreate
+from utils.clock import utc_now
+from utils.schemas.cell import CellCreate
+from utils.schemas.reading import ReadingCreate
 
 
 def test_reading_defaults_timestamp_to_none() -> None:

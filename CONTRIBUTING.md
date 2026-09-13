@@ -11,8 +11,8 @@
 ### 1. Fork y Clonar
 
 ```bash
-git clone https://github.com/tu-usuario/EDSIA-Beyond.git
-cd EDSIA-Beyond
+git clone https://github.com/tu-usuario/Solaris-Monitoring.git
+cd Solaris-Monitoring
 git remote add upstream <repo-original>
 ```
 
@@ -41,7 +41,7 @@ git checkout -b feature/descripcion-corta main
 pytest
 
 # Verificar cobertura
-pytest --cov=src/edsia_beyond
+pytest --cov=src/solaris_monitoring
 
 # Validar código
 ruff check src/
@@ -65,7 +65,7 @@ git commit -m "Descripción clara del cambio"
 ## Testing
 
 ```bash
-pytest tests/ --cov=src/edsia_beyond
+pytest tests/ --cov=src/solaris_monitoring
 ```
 
 Cobertura mínima: 90%

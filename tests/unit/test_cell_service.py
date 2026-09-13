@@ -1,10 +1,10 @@
 import pytest
 
-from edsia_beyond.domain.errors import CellNotFoundError, DuplicateCellNameError
-from edsia_beyond.repositories.protocols import CellRepository
-from edsia_beyond.schemas.cell import CellCreate, CellUpdate
-from edsia_beyond.services.cell_service import CellService
 from tests.fakes import InMemoryCellRepository, make_cell
+from utils.domain.errors import CellNotFoundError, DuplicateCellNameError
+from utils.repositories.protocols import CellRepository
+from utils.schemas.cell import CellCreate, CellUpdate
+from utils.services.cell_service import CellService
 
 
 def build_service(repo: InMemoryCellRepository | None = None) -> CellService:
@@ -16,9 +16,7 @@ def build_service(repo: InMemoryCellRepository | None = None) -> CellService:
 def test_create_derives_max_safe_voltage_from_rated_voltage() -> None:
     service = build_service()
 
-    cell = service.create(
-        CellCreate(name="Celda_01", location="Techo", rated_voltage=5.0)
-    )
+    cell = service.create(CellCreate(name="Celda_01", location="Techo", rated_voltage=5.0))
 
     assert cell.max_safe_voltage == 6.0
     assert cell.is_active is True

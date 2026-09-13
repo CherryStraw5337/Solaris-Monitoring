@@ -1,19 +1,19 @@
 services:
   - type: web
-    name: edsia-beyond-api
+    name: solaris-monitoring-api
     runtime: docker
     plan: starter
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: edsia-beyond-db
+          name: solaris-monitoring-db
           property: connectionString
       - key: ENVIRONMENT
         value: production
 
 databases:
-  - name: edsia-beyond-db
-    databaseName: edsia_db
-    user: edsia_user
+  - name: solaris-monitoring-db
+    databaseName: solaris_monitoring_db
+    user: solaris_user
     plan: starter

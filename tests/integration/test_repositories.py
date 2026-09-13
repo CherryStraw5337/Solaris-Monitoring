@@ -3,11 +3,11 @@ from datetime import UTC, datetime, timedelta, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from edsia_beyond.clock import utc_now
-from edsia_beyond.models import PhotovoltaicCell, Reading
-from edsia_beyond.repositories.cell_repo import SqlAlchemyCellRepository
-from edsia_beyond.repositories.protocols import CellRepository, ReadingRepository
-from edsia_beyond.repositories.reading_repo import SqlAlchemyReadingRepository
+from utils.clock import utc_now
+from utils.models import PhotovoltaicCell, Reading
+from utils.repositories.cell_repo import SqlAlchemyCellRepository
+from utils.repositories.protocols import CellRepository, ReadingRepository
+from utils.repositories.reading_repo import SqlAlchemyReadingRepository
 
 
 def new_cell(name: str = "Celda_01", is_active: bool = True) -> PhotovoltaicCell:

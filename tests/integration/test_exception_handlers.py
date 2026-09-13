@@ -2,8 +2,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from edsia_beyond.domain.errors import CellNotFoundError, DomainError
-from edsia_beyond.exception_handlers import register_exception_handlers
+from utils.domain.errors import CellNotFoundError, DomainError
+from utils.exception_handlers import register_exception_handlers
 
 
 class UnmappedDomainError(DomainError):

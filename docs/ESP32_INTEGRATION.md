@@ -1,4 +1,4 @@
-# Integración ESP32 con API EDSIA Beyond
+# Integración ESP32 con API Solaris Monitoring
 
 ## Visión General
 
@@ -44,7 +44,7 @@ GND                                    → GND
 // ===== Configuración =====
 const char* SSID = "TU_SSID";
 const char* PASSWORD = "TU_PASSWORD";
-const char* API_URL = "http://edsia-beyond-api.onrender.com";
+const char* API_URL = "http://solaris-monitoring-api.onrender.com";
 const int CELL_ID = 1;  // ID de la celda en la API
 const int ADC_PIN = A0; // GPIO 36
 const int INTERVAL_MS = 300000; // 5 minutos
@@ -58,7 +58,7 @@ unsigned long last_send = 0;
 void setup() {
     Serial.begin(115200);
     delay(2000);
-    
+
     Serial.println("\n\nIniciando ESP32...");
     connect_wifi();
 }
@@ -67,13 +67,13 @@ void loop() {
     if (WiFi.status() != WL_CONNECTED) {
         connect_wifi();
     }
-    
+
     // Enviar cada 5 minutos
     if (millis() - last_send > INTERVAL_MS) {
         send_reading();
         last_send = millis();
     }
-    
+
     delay(1000);
 }
 
@@ -81,14 +81,14 @@ void connect_wifi() {
     Serial.printf("Conectando a WiFi: %s\n", SSID);
     WiFi.mode(WIFI_STA);
     WiFi.begin(SSID, PASSWORD);
-    
+
     int attempts = 0;
     while (WiFi.status() != WL_CONNECTED && attempts < 20) {
         delay(500);
         Serial.print(".");
         attempts++;
     }
-    
+
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("\nWiFi conectado!");
         Serial.print("IP: ");
@@ -103,26 +103,26 @@ void send_reading() {
         Serial.println("WiFi desconectado, saltando lectura");
         return;
     }
-    
+
     // Leer voltaje
     int raw_adc = analogRead(ADC_PIN);
     float voltage = (raw_adc / (float)ADC_MAX) * REF_VOLTAGE;
-    
+
     Serial.printf("ADC Raw: %d, Voltaje: %.2f V\n", raw_adc, voltage);
-    
+
     // Crear JSON
-    String payload = "{\"cell_id\":" + String(CELL_ID) + 
+    String payload = "{\"cell_id\":" + String(CELL_ID) +
                      ",\"voltage_measured\":" + String(voltage, 2) + "}";
-    
+
     // Enviar a API
     HTTPClient http;
     String url = String(API_URL) + "/api/v1/readings";
-    
+
     http.begin(url);
     http.addHeader("Content-Type", "application/json");
-    
+
     int httpCode = http.POST(payload);
-    
+
     if (httpCode == 201) {
         Serial.println("✓ Lectura enviada exitosamente");
         String response = http.getString();
@@ -131,7 +131,7 @@ void send_reading() {
         Serial.printf("✗ Error HTTP: %d\n", httpCode);
         Serial.println("Payload: " + payload);
     }
-    
+
     http.end();
 }
 ```
@@ -165,7 +165,7 @@ from machine import ADC, Pin
 # ===== Configuración =====
 SSID = "TU_SSID"
 PASSWORD = "TU_PASSWORD"
-API_URL = "http://edsia-beyond-api.onrender.com"
+API_URL = "http://solaris-monitoring-api.onrender.com"
 CELL_ID = 1
 ADC_PIN = 36  # GPIO 36 (ADC1_0)
 INTERVAL_SEC = 300  # 5 minutos
@@ -177,17 +177,17 @@ adc.atten(ADC.ATTN_11DB)  # Full range 0-3.3V
 def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
-    
+
     if not wlan.isconnected():
         print(f"Conectando a {SSID}...")
         wlan.connect(SSID, PASSWORD)
-        
+
         timeout = 20
         while not wlan.isconnected() and timeout > 0:
             time.sleep(1)
             timeout -= 1
             print(".", end="")
-    
+
     if wlan.isconnected():
         print(f"\n✓ WiFi conectado: {wlan.ifconfig()[0]}")
         return True
@@ -209,37 +209,37 @@ def send_reading(voltage):
             "cell_id": CELL_ID,
             "voltage_measured": voltage
         })
-        
+
         headers = {"Content-Type": "application/json"}
         response = urequests.post(url, data=payload, headers=headers)
-        
+
         if response.status_code == 201:
             print("✓ Lectura enviada")
             print(f"  Response: {response.json()}")
         else:
             print(f"✗ Error: {response.status_code}")
             print(f"  Response: {response.text}")
-        
+
         response.close()
-        
+
     except Exception as e:
         print(f"✗ Error de conexión: {e}")
 
 def main():
     if not connect_wifi():
         return
-    
+
     print("Iniciando lecturas cada 5 minutos...")
-    
+
     while True:
         try:
             voltage = read_voltage()
             print(f"Voltaje leído: {voltage} V")
             send_reading(voltage)
-            
+
             print(f"Esperando {INTERVAL_SEC} segundos...\n")
             time.sleep(INTERVAL_SEC)
-            
+
         except KeyboardInterrupt:
             print("\nDetenido por usuario")
             break

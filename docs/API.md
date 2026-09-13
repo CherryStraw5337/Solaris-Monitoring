@@ -1,4 +1,4 @@
-# API REST — EDSIA Beyond Photovoltaic Monitor
+# API REST — Solaris Monitoring Photovoltaic Monitor
 
 API para registrar lecturas de voltaje de celdas fotovoltaicas enviadas por dispositivos IoT
 (ESP32) y consultar su eficiencia.
@@ -26,7 +26,7 @@ API para registrar lecturas de voltaje de celdas fotovoltaicas enviadas por disp
 
 ### `GET /`
 ```json
-{ "message": "EDSIA Beyond API - Photovoltaic Monitor" }
+{ "message": "Solaris Monitoring API - Photovoltaic Monitor" }
 ```
 
 ### `GET /health`

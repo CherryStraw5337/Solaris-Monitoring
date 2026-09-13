@@ -1,14 +1,15 @@
+import pytest
 from fastapi.testclient import TestClient
 
-from edsia_beyond.config import Settings
-from edsia_beyond.main import create_app
+from main import create_app
+from utils.config import Settings
 
 
 def test_root_identifies_the_api(client: TestClient) -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "EDSIA Beyond" in response.json()["message"]
+    assert "Solaris Monitoring" in response.text
 
 
 def test_health_reports_ok(client: TestClient) -> None:
@@ -16,6 +17,19 @@ def test_health_reports_ok(client: TestClient) -> None:
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+    assert response.json()["service_status"] == "operational"
+
+
+def test_health_reports_invalid_update_date(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("UPDATE_DATE", "not-a-date")
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "degraded"
+    assert response.json()["service_status"] == "degraded"
 
 
 def test_openapi_schema_is_served(client: TestClient) -> None:

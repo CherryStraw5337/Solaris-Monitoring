@@ -8,6 +8,6 @@ def test_smoke() -> None:
 
 def test_import() -> None:
     """Test that main module imports correctly."""
-    import edsia_beyond  # noqa: F401
+    import src  # noqa: F401
 
     assert True

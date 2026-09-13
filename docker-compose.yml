@@ -3,11 +3,11 @@ version: '3.8'
 services:
   api:
     build: .
-    container_name: edsia-beyond-api
+    container_name: solaris-monitoring-api
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+psycopg://edsia_user:edsia_pass@db:5432/edsia_db
+      DATABASE_URL: postgresql+psycopg://solaris_user:solaris_pass@db:5432/solaris_monitoring_db
       ENVIRONMENT: development
     depends_on:
       db:
@@ -15,30 +15,30 @@ services:
     volumes:
       - .:/app
     networks:
-      - edsia-network
+      - solaris-network
 
   db:
     image: postgres:16-alpine
-    container_name: edsia-beyond-db
+    container_name: solaris-monitoring-db
     environment:
-      POSTGRES_USER: edsia_user
-      POSTGRES_PASSWORD: edsia_pass
-      POSTGRES_DB: edsia_db
+      POSTGRES_USER: solaris_user
+      POSTGRES_PASSWORD: solaris_pass
+      POSTGRES_DB: solaris_monitoring_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U edsia_user"]
+      test: ["CMD-SHELL", "pg_isready -U solaris_user"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - edsia-network
+      - solaris-network
 
 volumes:
   postgres_data:
 
 networks:
-  edsia-network:
+  solaris-network:
     driver: bridge

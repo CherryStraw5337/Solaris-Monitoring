@@ -7,8 +7,8 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from edsia_beyond.db import Base, get_db
-from edsia_beyond.main import create_app
+from db import Base, get_db
+from main import create_app
 
 
 @pytest.fixture

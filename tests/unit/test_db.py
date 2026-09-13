@@ -4,8 +4,8 @@ import pytest
 from sqlalchemy import Engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from edsia_beyond import db as db_module
-from edsia_beyond.db import create_db_engine, get_db
+import db as db_module
+from db import create_db_engine, get_db
 
 
 def test_sqlite_engine_allows_cross_thread_access(monkeypatch: pytest.MonkeyPatch) -> None:

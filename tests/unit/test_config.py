@@ -1,6 +1,6 @@
 import pytest
 
-from edsia_beyond.config import DEFAULT_API_VERSION, DEFAULT_DATABASE_URL, Settings
+from utils.config import DEFAULT_API_VERSION, DEFAULT_DATABASE_URL, Settings
 
 
 def test_defaults_when_env_is_empty() -> None:
