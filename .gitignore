@@ -69,3 +69,8 @@ docker-compose.override.yml
 *.sublime-project
 *.sublime-workspace
 solaris_monitoring.db
+coverage.xml
+
+# Auditory
+revision.md
+pr_description.md

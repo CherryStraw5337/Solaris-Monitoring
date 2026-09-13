@@ -1,15 +1,33 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
 from utils.routers import cells, health, readings
 
 API_PREFIX = "/api/v1"
+PUBLIC_DIR = Path(__file__).resolve().parent / "public"
+
+# Almacenar Settings globalmente para usarlo en dependencias
+_current_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Dependencia que retorna la configuración actual."""
+    global _current_settings
+    if _current_settings is None:
+        _current_settings = Settings.from_env()
+    return _current_settings
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
+    global _current_settings
     resolved = settings if settings is not None else Settings.from_env()
+    _current_settings = resolved
+
     app = FastAPI(
         title=resolved.api_title,
         description="API REST para monitoreo de eficiencia de celdas fotovoltaicas",
@@ -28,6 +46,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health.router)
     app.include_router(cells.router, prefix=API_PREFIX)
     app.include_router(readings.router, prefix=API_PREFIX)
+    # Debe montarse al final: un mount en "/" captura toda ruta no registrada antes.
+    app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="landing")
     return app
 
 
