@@ -1,18 +1,19 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
-from utils.dependencies import ReadingServiceDep
+from utils.dependencies import ReadingServiceDep, verify_api_key
 from utils.schemas.reading import ReadingCreate, ReadingOut, ReadingSummary
 
 router = APIRouter(prefix="/readings", tags=["readings"])
 
 LimitQuery = Annotated[int, Query(ge=1, le=1000)]
 DaysQuery = Annotated[int, Query(ge=1, le=365)]
+ApiKeyDep = Annotated[str, Depends(verify_api_key)]
 
 
 @router.post("", response_model=ReadingOut, status_code=status.HTTP_201_CREATED)
-def create_reading(payload: ReadingCreate, service: ReadingServiceDep) -> ReadingOut:
+def create_reading(payload: ReadingCreate, _: ApiKeyDep, service: ReadingServiceDep) -> ReadingOut:
     return service.create(payload)
 
 

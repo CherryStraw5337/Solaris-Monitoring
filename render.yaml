@@ -11,6 +11,9 @@ services:
           property: connectionString
       - key: ENVIRONMENT
         value: production
+      - key: DEVICE_API_KEY
+        scope: project
+        sync: false
 
 databases:
   - name: solaris-monitoring-db
