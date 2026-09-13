@@ -3,34 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solaris Monitoring</title>
+    <title>☀️ MONITOREO SOLAR ☀️ | EDSIA-Beyond</title>
+    <!-- FontAwesome para los íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Conexión a tu archivo de estilos -->
+    <link rel="stylesheet" href="style.css">
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        .container {
-            max-width: 600px; 
-            margin: auto; 
-            padding: 20px; 
-            border: 1px solid #ddd; 
-            border-radius: 10px; 
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.15);
-        }
-        h1 { color: #2c3e50; }
+        /* Estilos base integrados para asegurar compatibilidad con la tarjeta de estado */
         .badge {
+            display: inline-block;
             background-color: #27ae60;
             color: white; 
-            padding: 5px 10px; 
-            border-radius: 5px; 
+            padding: 6px 14px; 
+            border-radius: 6px;
+            font-weight: bold;
+            margin: 10px 0;
+            transition: background-color 0.3s ease;
+        }
+        .status-container {
+            margin-top: 15px;
+            font-size: 0.95rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>☀️ SOLARIS MONITORING ☀️</h1>
-        <p>Monitoreo Predictivo de Paneles Solares</p>
-        <span id="service-status" class="badge">Estado de la API: verificando...</span>
-        <p id="update-date">Última actualización: verificando...</p>
-        <p>Proyecto de arquitectura y telemetría de paneles solares.</p>
-    </div>
+
+    <!-- PRIMERA PANTALLA: HERO CON PARALLAX E INTEGRANTES -->
+    <section class="hero-section">
+        <h1 class="hero-title">☀️ SOLARIS MONITORING ☀️</h1>
+        <p class="hero-subtitle">Monitoreo Predictivo de Paneles Solares</p>
+
+        <!-- SECCIÓN DE INTEGRANTES DEL EQUIPO -->
+        <div class="team-profiles">
+            <a href="https://github.com/lylaxtraw" target="_blank" class="profile">
+                <img src="https://github.com/lylaxtraw.png" alt="lylaxtraw">
+                <span>lylaxtraw</span>
+            </a>
+            
+            <a href="https://github.com/martincb858" target="_blank" class="profile">
+                <img src="https://github.com/martincb858.png" alt="martincb858">
+                <span>martincb858</span>
+            </a>
+
+            <a href="https://github.com/JoseB1342" target="_blank" class="profile">
+                <img src="https://github.com/JoseB1342.png" alt="JoseB1342">
+                <span>JoseB1342</span>
+            </a>
+        </div>
+
+        <i class="fa-solid fa-angles-down scroll-indicator"></i>
+    </section>
+
+    <!-- SEGUNDA PANTALLA: CONTENIDO ANIMADO, TARJETA DE ESTADO DE LA API Y REPOSITORIO -->
+    <section class="content-section">
+        <div class="glass-card" id="info-card">
+            <h2><i class="fa-solid fa-microchip"></i> Solaris Monitoring</h2>
+            <p>
+                Proyecto de arquitectura y telemetría de paneles solares. Decidimos desarrollar este proyecto porque en la actualidad se están optando por las fuentes de energía renovables pero estas aún no se están aprovechando del todo. Por eso trabajamos en hacer este proyecto: para sacar el máximo provecho de nuestros paneles solares y así poder tener un mejor rendimiento de estos.
+            </p>
+
+            <!-- LÓGICA DE ESTADO DE LA API (DEL PRIMER HTML) -->
+            <div class="status-container">
+                <span id="service-status" class="badge">Estado de la API: verificando...</span>
+                <p id="update-date">Última actualización: verificando...</p>
+            </div>
+            
+            <a href="https://github.com/CherryStraw5337/EDSIA-Beyond" target="_blank" class="btn-github" style="margin-top: 20px; display: inline-flex; align-items: center; gap: 10px;">
+                <i class="fa-brands fa-github fa-xl"></i> Ver Repositorio
+            </a>
+        </div>
+    </section>
+
+    <!-- CONEXIÓN AL SCRIPT DE LA API Y ANIMACIONES -->
     <script>
         const statusElement = document.getElementById("service-status");
         const updateDateElement = document.getElementById("update-date");
@@ -54,10 +98,13 @@
                 statusElement.style.backgroundColor = "#c0392b";
                 updateDateElement.textContent = "Última actualización: no disponible";
             });
-            }
+        }
 
-            updateHealth();
-            window.setInterval(updateHealth, 30000);
+        updateHealth();
+        window.setInterval(updateHealth, 30000);
     </script>
+    
+    <!-- Conexión al archivo de JavaScript externo de animaciones -->
+    <script src="main.js"></script>
 </body>
 </html>
