@@ -275,8 +275,8 @@ void send_reading() {
 #endif
 
 // ===== Configuración de Red =====
-const char* SSID = "Megacable_2.4G_24DA";
-const char* PASSWORD = "B77cfMq13422004";
+const char* SSID = "SSID";
+const char* PASSWORD = "PASSWORD";
 
 // ===== Configuración Celda y ADC =====
 const int CELL_ID = 1; 
@@ -286,11 +286,11 @@ const float REF_VOLTAGE = 3.3;
 const int ADC_MAX = 4095;
 
 // ===== Configuración HiveMQ Cloud =====
-const char* mqtt_server = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud";
-const int MQTT_PORT = 8883; // CORREGIDO: Puerto 8883 obligatorio para PubSubClient con TLS
+const char* mqtt_server = "Tu MQTT";
+const int MQTT_PORT = PUERTO; // CORREGIDO: Puerto 8883 obligatorio para PubSubClient con TLS
 
-const char* MQTT_USER = "test"; 
-const char* MQTT_PASSWORD = "13422004"; 
+const char* MQTT_USER = "tu usuario"; 
+const char* MQTT_PASSWORD = "tu contraseña"; 
 
 const char* MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage";
 
