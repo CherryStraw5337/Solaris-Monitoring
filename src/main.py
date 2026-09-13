@@ -1,14 +1,16 @@
 import os
 from datetime import datetime
+from typing import Any
 
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 app = FastAPI(
-    title="Solaris Monitoring", 
+    title="Solaris Monitoring",
     description="API para monitoreo de métricas de paneles solares",
-    version="0.1.0"
+    version="0.1.0",
 )
+
 
 # Esquema Pydantic para validar los datos que envía el sensor_simulado.py
 class LecturaPayload(BaseModel):
@@ -32,7 +34,7 @@ def get_update_date() -> str:
 
 
 @app.get("/health")
-def health_check() -> None:
+def health_check() -> dict[str, str]:
     update_date = get_update_date()
     api_status = "operational" if update_date != "Configuración inválida" else "degraded"
     message = (
@@ -47,7 +49,8 @@ def health_check() -> None:
         "message": message,
     }
 
+
 @app.post("/api/v1/lecturas")
-def recibir_lectura(lectura: LecturaPayload) -> None:
+def recibir_lectura(lectura: LecturaPayload) -> dict[str, Any]:
     # TODO: Integrar inserción a la base de datos PostgreSQL con SQLAlchemy
     return {"message": "Lectura recibida exitosamente", "data": lectura}
