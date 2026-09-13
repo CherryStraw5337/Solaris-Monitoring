@@ -1,97 +1,88 @@
-# ☀️ Solaris Monitoring ☀️
+# Solaris Monitoring
 
-Proyecto desarrollado para el reto **"De la idea a producción en veintiún días"** del curso *DE LA ELECTRÓNICA AL DESARROLLO DE SOFTWARE CON IA*. Este repositorio contiene el desarrollo backend de una API robusta para la gestión y monitoreo de métricas de paneles solares (voltaje, corriente, potencia y energía acumulada).
+API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia, detección de anomalías y soporte para dispositivos IoT.
 
-## Stack Tecnológico
+## Características
 
-*   **Framework API:** FastAPI (Python 3.12+)
-*   **Base de Datos:** PostgreSQL
-*   **ORM y Migraciones:** SQLAlchemy y Alembic
-*   **Contenedorización:** Docker & Docker Compose
-*   **CI/CD & Calidad:** GitHub Actions, Ruff, MyPy, Pytest (Cobertura mínima del 90%)
+- API REST con FastAPI.
+- Persistencia con SQLAlchemy y migraciones Alembic.
+- PostgreSQL en Docker y SQLite para desarrollo y pruebas.
+- Arquitectura separada por routers, servicios, repositorios, esquemas y dominio.
+- Panel HTML servido por `/` y actualizado con el estado de `/health`.
+- CI/CD con Ruff, Mypy, Pytest, cobertura mínima del 90 %, migraciones y build Docker.
 
-## Estructura del Proyecto
+## Inicio rápido
 
-El repositorio sigue un orden arquitectónico estricto basado en modularidad:
-
-*   `src/`: Código fuente principal de la aplicación.
-    *   `main.py`: Punto de entrada de FastAPI.
-    *   `models.py`: Modelos de la base de datos (SQLAlchemy).
-    *   `sensor_simulado.py`: Script generador de carga útil realista para testear los endpoints de recolección de métricas.
-    *   `public/`: Códigos HTML
-        *   `index.html`: Base de las páginas
-*   `docs/`: Documentación del proyecto.
-*   `.github/`: Flujos de automatización CI/CD, configuración de versionado semántico y plantillas de Issues (Bug, Pregunta, Tarea de Desarrollo, etc.).
-*   `.tests_check/`: Carpeta para los testeos realizados a mano desde la computadora del usuario
-*   `tests/`: Carpeta para los tests de la API previo a su merge con main branch
-
-## Despliegue Local
-
-Para levantar el entorno completo de desarrollo con la base de datos PostgreSQL y la API interconectada, necesitas tener Docker Desktop instalado y ejecutándose.
-
-1. Clona el repositorio e ingresa a la carpeta raíz.
-2. Construye y levanta los contenedores usando Docker Compose:
-    ```bash
-    docker-compose up --build -d
-    ```
-3. Comprueba que los servicios estén ejecutándose:
-    ```bash
-    docker-compose ps
-    ```
-4. Verifica la API en `http://localhost:8000/health` o con:
-    ```bash
-    curl http://localhost:8000/health
-    ```
-
-La API se publica en el puerto `8000`. PostgreSQL se publica en el puerto `5433` del equipo local y mantiene el puerto interno `5432` para la comunicación con la API.
-
-Para detener los servicios:
+### Desarrollo local
 
 ```bash
-docker-compose down
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+uvicorn main:app --app-dir src --reload
 ```
 
-Para eliminar también los datos persistidos de PostgreSQL, usa `docker-compose down -v`.
+Abre `http://localhost:8000/` para ver el panel, `http://localhost:8000/health` para el estado JSON y `http://localhost:8000/docs` para Swagger.
 
-### Ejecución manual de la API
-
-Si solo necesitas ejecutar la API fuera de Docker:
-
-1. Crea y activa un entorno virtual:
-    ```bash
-    python3 -m venv .venv
-    source .venv/bin/activate
-    ```
-2. Instala las dependencias de desarrollo:
-    ```bash
-    pip install -r requirements-dev.txt
-    ```
-3. Inicia el servidor:
-    ```bash
-    uvicorn src.main:app --reload
-    ```
-
-La documentación interactiva queda disponible en `http://localhost:8000/docs`.
-
-### Estado y fecha de actualización
-
-El endpoint `/health` devuelve `service_status` y `update_date`. El estado se
-calcula al responder la petición: `operational` indica que la API está disponible
-y `degraded` indica una configuración inválida.
-
-Al crear una tarea con la plantilla `tarea_desarrollo`, registra `update_date`
-como `YYYY-MM-DD`. Antes de desplegar la tarea, configura esa misma fecha en la
-variable `UPDATE_DATE` del servicio de Render (o en el entorno local). GitHub
-Issues sirve como registro de la decisión, mientras que Render inyecta el valor
-que consume la API.
-
-La página publicada en GitHub Pages puede consultar una API remota con la URL
-del servicio: `index.html?api=https://tu-api.onrender.com`.
-
-### Simulación de lecturas
-
-Con la API ejecutándose, abre otra terminal y lanza el sensor simulado:
+### Docker Compose
 
 ```bash
-python3 src/sensor_simulado.py
+docker compose up --build -d
+curl http://localhost:8000/health
+docker compose down
 ```
+
+La API utiliza `DATABASE_URL`; consulta `.env.example` para las variables disponibles.
+
+## Estructura
+
+```text
+src/
+├── main.py                 # Aplicación FastAPI y registro de routers
+├── db.py                   # Motor, sesión y base SQLAlchemy
+└── utils/
+    ├── domain/             # Reglas de eficiencia y anomalías
+    ├── models/             # Modelos SQLAlchemy
+    ├── repositories/       # Persistencia
+    ├── routers/            # Endpoints HTTP, incluido /health
+    ├── schemas/            # Contratos Pydantic
+    ├── services/           # Casos de uso
+    └── public/index.html   # Panel de estado
+```
+
+## Endpoints
+
+- `GET /`: panel de estado de Solaris Monitoring.
+- `GET /health`: estado de la API y fecha de actualización configurada.
+- `GET /docs`: documentación OpenAPI.
+- `POST /api/v1/cells` y `GET /api/v1/cells`: gestión de celdas.
+- `POST /api/v1/readings` y `GET /api/v1/readings`: recepción y consulta de lecturas.
+- `GET /api/v1/readings/cell/{cell_id}/summary`: resumen de eficiencia.
+
+`UPDATE_DATE` acepta fechas con formato `YYYY-MM-DD`. Si la configuración es inválida, `/health` informa estado `degraded` y el panel lo refleja automáticamente.
+
+## Calidad y pruebas
+
+Los comandos locales equivalentes al CI son:
+
+```bash
+ruff check .
+ruff format --check .
+mypy src tests
+pytest --cov=src --cov-report=term-missing --cov-report=xml
+alembic upgrade head
+```
+
+La cobertura mínima está definida en `pyproject.toml` y es del 90 %.
+
+## Despliegue
+
+El `Dockerfile` ejecuta las migraciones antes de iniciar Uvicorn. `render.yaml` contiene la configuración base para Render. La documentación adicional está en [docs/API.md](docs/API.md), [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) y [docs/ESP32_INTEGRATION.md](docs/ESP32_INTEGRATION.md).
+
+## Contribución
+
+Usa ramas de trabajo, añade pruebas para los cambios y ejecuta las validaciones del CI antes de abrir un Pull Request. El uso de IA y las decisiones relevantes deben registrarse en [docs/ai_logs/AI_LOG_Lyla.md](docs/ai_logs/AI_LOG_Lyla.md) o en el log correspondiente al integrante.
+
+## Licencia
+
+MIT. Consulta [LICENSE](LICENSE).

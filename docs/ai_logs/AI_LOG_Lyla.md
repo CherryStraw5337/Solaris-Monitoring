@@ -1781,4 +1781,84 @@ Esta estructura les dará un entorno de trabajo limpio, ordenado y escalable sin
 
 **Qué se denegó:** No se requería que la IA armara el `README.md` en ese momento ni que analizara los perfiles aún.
 
+---
+
+# Lyla Alice - Prompt #26
+### IA Utilizada: GitHub Copilot
+**Prompt del integrante completo:**
+> Necesito tu ayuda organizando todos los archivos, ya que como podrás notar hubo varios cambios. Debemos hacer lo posible para solucionar todo, junto con lo que nos pidieron del review. No olvides agregar las entradas que faltan al log (el de lyla).
+
+**Respuesta de la IA completa:**
+Se revisó el merge fallido entre `lyla` y `origin/martin`. La rama `martin` aporta la aplicación nueva completa, mientras que `lyla` contiene archivos propios que no debían eliminarse. Durante la preparación de la integración se detectó que varios archivos exclusivos de `lyla` habían quedado marcados para borrar.
+
+**Qué se aceptó:** Usar la aplicación de `martin` como base de la integración, conservar los archivos propios de `lyla` y registrar el trabajo en este log.
+**Qué se denegó:** No se autorizó borrar archivos de `lyla` sin consultar previamente.
+**Qué se modificó:** Se resolvió la estructura del merge y se identificó la necesidad de restaurar los archivos exclusivos de `lyla` antes de continuar.
+
+---
+
+# Lyla Alice - Prompt #27
+### IA Utilizada: GitHub Copilot
+**Prompt del integrante completo:**
+> No, el problema es que borraste archivos sin preguntarme antes. Restaura todo lo que borraste. Genera los Logs de IA (deben ir en la de lyla), y la branch martin es la que tiene ya los archivos de la app. Antes de volver a hacer algo así, pregúntame primero.
+
+**Respuesta de la IA completa:**
+Se reconoció el error y se restauraron desde `HEAD` todos los archivos exclusivos de `lyla` que habían sido eliminados durante la resolución del merge: las plantillas de Issues, el workflow de release, el ADR, `AI_LOG_Lyla.md`, `src/main.py`, `src/models.py`, `src/public/index.html`, `src/sensor_simulado.py` y sus pruebas. Se conservaron los archivos de aplicación aportados por `martin` y se añadieron estas entradas al log de Lyla. En adelante, cualquier borrado o reemplazo de archivos se consultará antes de ejecutarse.
+
+**Qué se aceptó:** Restaurar íntegramente los archivos borrados de `lyla`, mantener la aplicación de `martin` y registrar las intervenciones en el log de Lyla.
+**Qué se denegó:** No se autorizó eliminar, reemplazar ni descartar archivos sin confirmación previa.
+**Qué se modificó:** Se restauraron los archivos exclusivos de `lyla` y se añadieron las entradas #26 y #27 a este log.
+
+---
+
+# Lyla Alice - Prompt #28
+### IA Utilizada: GitHub Copilot
+**Prompt del integrante completo:**
+> En `src`, solo debe quedar `main.py` y `db.py`; los demás mételos a `utils/` (excepto `models.py` y `sensor_simulado.py`, esos bórralos).
+
+**Respuesta de la IA completa:**
+Se reorganizó `src` para conservar únicamente `main.py`, `db.py` y el directorio `utils/`. Los módulos y subdirectorios de la aplicación de `martin` se trasladaron a `src/utils/`, se actualizaron los imports para usar `utils.*`, y se eliminaron `src/models.py`, `src/sensor_simulado.py` y `src/__init__.py`. Tras confirmar con el integrante, también se eliminaron los tres tests heredados que dependían de esas funcionalidades retiradas. Se añadió `src/utils/__init__.py` para que Mypy reconociera correctamente el paquete.
+
+Comandos de validación:
+
+```bash
+.venv/bin/ruff check . --fix
+.venv/bin/ruff format .
+.venv/bin/mypy src tests
+# Success: no issues found in 45 source files
+.venv/bin/python -m pytest
+# 116 passed, 2 warnings
+```
+
+**Qué se aceptó:** La nueva organización de `src`, la eliminación de los dos módulos solicitados y de los tests heredados incompatibles.
+**Qué se denegó:** No se mantuvieron módulos duplicados en la raíz de `src`.
+**Qué se modificó:** Se movieron los módulos a `src/utils/`, se actualizaron imports y Docker para arrancar con `main:app`, y se registró esta intervención.
+
+---
+
+# Lyla Alice - Prompt #29
+### IA Utilizada: GitHub Copilot
+**Prompt del integrante completo:**
+> Ahora viene la chamba dura: aparte de agregar TODOS los prompts a partir del último registrado en mi log, hay que ajustar el README, me gustaría fusionar la estructura de Martin con lo que ya teníamos antes. El proyecto se llama Solaris Monitoring, así que donde todavía diga EDSIA o parecido debes cambiarlo. Igualmente, regresa la función de tener actualizado constantemente el .html y /health con el estado de la API. Sobre el ci.yml, haz lo que consideres mejor: juntarlo con ci-cd.yml o eliminarlo. Por último, cuando termines TODOS los cambios, vas a hacerles su git add, git commit, y al final el push, a la branch lyla.
+
+**Respuesta de la IA completa:**
+Se consolidó la estructura de la aplicación de Martin con la identidad original de Solaris Monitoring. Se actualizó el README para documentar la estructura actual bajo `src/main.py`, `src/db.py` y `src/utils/`, se reemplazaron las referencias activas a EDSIA, y se mantuvieron los logs históricos sin reescribir sus prompts. El endpoint `/` ahora sirve el panel HTML real; `/health` informa estado operativo, fecha de actualización y estado degradado cuando `UPDATE_DATE` es inválida. El panel consulta `/health` al cargar y cada 30 segundos, reflejando cambios de estado.
+
+Se unificó el CI en `.github/workflows/ci-cd.yml`, incorporando Ruff, formato, Mypy, Pytest con cobertura mínima del 90 %, migraciones Alembic y build Docker. Se eliminó el workflow duplicado `ci.yml`.
+
+Validaciones ejecutadas:
+
+```bash
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+.venv/bin/mypy src tests
+.venv/bin/python -m pytest --cov=src --cov-report=term-missing
+DATABASE_URL=sqlite:///./ci_check.db .venv/bin/alembic upgrade head
+# 117 passed, 2 warnings; coverage 100.00%; Mypy y Ruff sin errores
+```
+
+**Qué se aceptó:** La consolidación de Martin con Solaris Monitoring, el README actualizado, el health dinámico, el panel HTML sincronizado y un único workflow CI/CD.
+**Qué se denegó:** No se conservaron nombres activos de EDSIA ni workflows CI duplicados.
+**Qué se modificó:** README, configuración, health, frontend, tests, Docker, workflow CI/CD, referencias de documentación y este AI_LOG.
+
 **Qué se modificó:** Se decidió darle a la IA las instrucciones específicas de lo que debía contener el `CONTRIBUTING.md` (o archivo similar) en el siguiente prompt.
