@@ -7,13 +7,13 @@ body:
     id: problem
     attributes:
       label: Problema que resuelve / Historia de Usuario
-<<<<<<< HEAD
-<<<<<<< HEAD
+
+
       description: Describe brevemente qué problema soluciona esta tarea, o redacta la User Story.
-=======
+
       description: Describe brevemente qué problema soluciona esta tarea o redacta la User Story.
 >>>>>>> f62bc76 (yml: creado plantilla para desarrollo de tarea)
-=======
+
       description: Describe brevemente qué problema soluciona esta tarea, o redacta la User Story.
 >>>>>>> 45258b3 (yml: creado plantilla para desarrollo de tarea)
     validations:
@@ -25,7 +25,7 @@ body:
       description: Lista los requerimientos exactos para que este Issue se considere terminado.
     validations:
       required: true
-<<<<<<< HEAD
+
   - type: input
     id: update_date
     attributes:
@@ -34,7 +34,7 @@ body:
       placeholder: "2026-09-12"
     validations:
       required: true
-=======
+
 >>>>>>> f62bc76 (yml: creado plantilla para desarrollo de tarea)
   - type: dropdown
     id: moscow

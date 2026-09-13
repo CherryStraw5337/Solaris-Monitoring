@@ -1,10 +1,14 @@
 # Log de prompts a las IAs
 
-<<<<<<< HEAD
+
+
 * Nombre de integrante - Prompt #(# de prompt)
-=======
+
 * Nombre de integrante - Prompt # (# de prompt)
 >>>>>>> e4f5669 (docs: movido log a carpeta correspondiente)
+
+* Nombre de integrante - Prompt #(# de prompt)
+>>>>>>> 06f75ab (docs: agregado logs de Lyla)
 * IA utilizada
 * Prompt del integrante completo
 * Respuesta de la IA completa
@@ -1525,6 +1529,249 @@ show_missing = true
 
 ---
 
+# Lyla Alice - Prompt #8
+### IA utilizada: Gemini
+**Prompt del integrante completo:** 
+> El equipo ha hecho avances al repositorio, y me gustaría que realices un análisis de lo que han añadido. Todavía no realizo el push de los cambios que tú me sugeriste, ya que estamos esperando a que el ingeniero Emma nos mande la información del proyecto, pero ya han pasado dos días sin ninguna noticia, por lo que siento que no estaría mal al menos aumentar nuestros workflows. La idea de Martín de esperar a que el profe la dé, organizarnos y asignar así las tareas no es mala, y yo sugerí tener un segundo proyecto privado menos impactante a la vez que el grande (el repo de EDSIA - Beyond), en caso que no logremos llegar a lo que queremos en el grande, podemos pasar al proyecto menor, pulirlo, perfeccionarlo y si tenemos tiempo aumentarle lo que logramos terminar del proyecto mayor (el mayor sería el proyecto más pesado, y el menor sería una derivación del mayor que no es 100% igual, pero tiene bases similares). De favor, entrega los archivos que configuración o workflows que consideres prudentes para esta etapa y la idea de Martin, así como un análisis de lo sugerido de los dos proyectos, y revisar de forma exhaustiva los 3 repos de nuevo junto al repo del proyecto, y darme tu honesta opinion. No hagas ninguna sugerencia o cambio fuera de lo solicitado y planteado previamente
+
+**Respuesta de la IA completa:** 
+```bash
+Basado en la información de los repositorios y las conversaciones previas, aquí tienes el análisis exhaustivo, la evaluación de la estrategia de los dos proyectos, y los archivos de configuración solicitados para esta etapa.1. Archivos de Configuración y Workflows (Idea de Martin y Lyla)Como acordamos en interacciones anteriores, la idea de Martin de automatizar la creación de Issues desde un archivo .sh local es propensa a errores y sobreingeniería. La forma correcta y nativa de Github para manejar esto (incluyendo las etiquetas MoSCoW que sugirió Martin) es mediante Issue Templates. Además, te incluyo el workflow de auto-versionado que solicitaste anteriormente.Archivo 1: Plantilla de Issue (Para reemplazar el script de Martin)Ruta: .github/ISSUE_TEMPLATE/tarea_desarrollo.ymlYAMLname: Tarea de Desarrollo / Issue
+description: Crea una nueva tarea estructurada para el Backlog
+title: "[Dev]: "
+labels: ["dev work"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema que resuelve / Historia de Usuario
+      description: Describe brevemente qué problema soluciona esta tarea o redacta la User Story.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterios de Aceptación
+      description: Lista los requerimientos exactos para que este Issue se considere terminado.
+    validations:
+      required: true
+  - type: dropdown
+    id: moscow
+    attributes:
+      label: Prioridad MoSCoW
+      description: Define la urgencia de esta tarea según el método MoSCoW.
+      options:
+        - "Must have (Debe tener)"
+        - "Should have (Debería tener)"
+        - "Could have (Podría tener)"
+        - "Won't have (No tendrá por ahora)"
+    validations:
+      required: true
+Archivo 2: Workflow de Auto-versionado (Tu propuesta)Ruta: .github/workflows/release.ymlYAMLname: Auto Release y Versionado
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Actualizar versión y crear Release
+        # Aquí se usaría una herramienta como python-semantic-release
+        # para leer los commits, actualizar pyproject.toml y crear el tag en GitHub.
+        run: |
+          echo "Ejecutando semantic release para actualizar pyproject.toml basado en el PR"
+          pip install python-semantic-release
+          semantic-release version
+          semantic-release publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+2. Análisis de la estrategia de los dos proyectos (Mayor y Menor)Tu idea de mantener un proyecto "mayor" (EDSIA - Beyond) y uno "menor" como plan de respaldo es una estrategia de mitigación de riesgos lógica, pero tiene pros y contras importantes:Pros: Te asegura tener un entregable funcional y pulido en caso de que la complejidad del proyecto principal supere el tiempo disponible o la información del profesor (Emma) tarde demasiado. Permite reciclar bases sólidas.Contras: Dividir la atención de un equipo de 3 personas en dos repositorios paralelos puede generar un desgaste enorme y fragmentar la comunicación. Mantener dos infraestructuras CI/CD, sincronizar los estándares de calidad (como el 90% de coverage que estipulaste) y revisar PRs en ambos lados podría ralentizar justo lo que intentan acelerar.Mi opinión honesta: En lugar de tener dos repositorios separados, es mejor adoptar un enfoque Ágil e Incremental en un solo repositorio. Creen un Producto Mínimo Viable (MVP) extremadamente básico (el equivalente a tu "proyecto menor") en la rama dev. Una vez que ese núcleo funcione, esté testeado y desplegado, comiencen a construir las características del "proyecto mayor" sobre él. Si el tiempo se acaba, simplemente liberan lo que tienen hasta ese punto, lo cual será funcional y pulido.3. Revisión exhaustiva de los repositorios y fortalezas del equipoHice una revisión del repositorio del proyecto y de los perfiles de los tres integrantes. El equipo tiene una sinergia técnica impresionante, ya que todos vienen de trabajar en proyectos casi idénticos recientemente (sdlc-electronica y SensorHub).Repositorio del Proyecto (EDSIA-Beyond):Actualmente está en su estado inicial, contando únicamente con .gitignore, LICENSE y README.md. Es un lienzo en blanco perfecto, a la espera de que subas los archivos de configuración a tu rama lyla.  Lyla Alice (lylaxtraw):Fortalezas: Eres claramente el perfil más robusto en términos de Arquitectura y DevOps. Tu repositorio Sensorhub-API demuestra un dominio profundo de arquitectura monolítica modular en 4 capas y Principio de Inversión de Dependencias (DIP). Tienes un estándar de calidad altísimo (96.85% de coverage, TDD estricto) y dominas la infraestructura (Docker Multi-stage, GitHub Actions, Render, Trivy). Además, documentas decisiones con ADRs.  Rol ideal: Arquitecta de Software, Líder Técnica y DevOps.Martin CB (martincb858):Fortalezas: Es un desarrollador muy activo y proactivo. Trabajó en el repositorio sdlc-electronica-martincb en Python, donde implementó arquitecturas complejas integrando Inteligencia Artificial para análisis de anomalías, mejoras en lógicas de alertas y sistemas de logging. También demuestra uso de ADRs (ADR-0002) y tiene repositorios de práctica sobre GitHub Actions (skills-test-with-actions, skills-hello-github-actions).  Rol ideal: Desarrollador Backend (enfocado en features complejas e integraciones lógicas).Jose (JoseB1342):Fortalezas: También trabajó en un clon de la misma API en Python (sdlc-electronica--Jose-Abimael-), logrando implementar una API REST completa con arquitectura limpia de 4 capas (Modelos/Schemas, Repositorios, Servicios). Participa activamente en la revisión de código, habiendo revisado múltiples PRs de Martin y los suyos propios.  Rol ideal: Desarrollador Backend y QA/Revisor de Código (dada su experiencia aprobando PRs y trabajando en la misma arquitectura).Opinión honesta sobre el equipo: Tienen un equipo excepcionalmente equilibrado. Al haber trabajado los tres en la misma arquitectura de 4 capas en Python para el proyecto de electrónica/sensores, hablan el mismo idioma técnico. No tendrán que perder tiempo discutiendo cómo estructurar las carpetas o qué framework usar.  Registro AI_LOGA continuación, te dejo el bloque correspondiente a esta interacción, siguiendo estrictamente tus lineamientos, para que lo agregues a tu archivo AI_LOG.md:  Markdown* Lyla Alice - Prompt # 6
+* IA utilizada: Gemini
+* Prompt del integrante completo: El equipo ha hecho avances al repositorio, y me gustaría que realices un análisis de lo que han añadido. Todavía no realizo el push de los cambios que tú me sugeriste, ya que estamos esperando a que el ingeniero Emma nos mande la información del proyecto, pero ya han pasado dos días sin ninguna noticia, por lo que siento que no estaría mal al menos aumentar nuestros workflows. La idea de Martín de esperar a que el profe la dé, organizarnos y asignar así las tareas no es mala, y yo sugerí tener un segundo proyecto privado menos impactante a la vez que el grande (el repo de EDSIA - Beyond), en caso que no logremos llegar a lo que queremos en el grande, podemos pasar al proyecto menor, pulirlo, perfeccionarlo y si tenemos tiempo aumentarle lo que logramos terminar del proyecto mayor (el mayor sería el proyecto más pesado, y el menor sería una derivación del mayor que no es 100% igual, pero tiene bases similares). De favor, entrega los archivos que configuración o workflows que consideres prudentes para esta etapa y la idea de Martin, así como un análisis de lo sugerido de los dos proyectos, y revisar de forma exhaustiva los 3 repos de nuevo junto al repo del proyecto, y darme tu honesta opinion. No hagas ninguna sugerencia o cambio fuera de lo solicitado y planteado previamente
+* Respuesta de la IA completa: Se entregó el código de un Issue Template en YAML (para reemplazar la idea del script .sh de Martin) y un workflow básico de release automatizado. Se analizó la estrategia de los dos proyectos, sugiriendo que, debido al riesgo de fragmentar la atención del equipo de 3, es preferible usar un solo repositorio y desarrollar un MVP (equivalente al proyecto menor) como base inicial escalable. Finalmente, se analizó a profundidad el repositorio del proyecto (que solo tiene archivos base) y los perfiles de los tres integrantes, destacando que todos comparten un fuerte trasfondo en la misma arquitectura de 4 capas en Python, lo cual es una gran ventaja técnica.
+    * Qué se aceptó: [Pendiente de llenar por Lyla]
+    * Qué se denegó: [Pendiente de llenar por Lyla]
+    * Qué se modificó: [Pendiente de llenar por Lyla]
+```
+* Qué se aceptó: Ambos archivos `.yml`, junto a la instrospección de los integrantes
+* Qué se denegó: N/A
+* Qué se modificó: N/A
+
+---
+
+# Lyla Alice - Prompt #7
+### IA utilizada: Gemini
+**Prompt del integrante completo:** 
+> Esto es lo que subió Martin, además de mi respuesta:
+> Contexto
+> Actualmente el repositorio cuenta con la configuración base, pero necesitamos definir la dirección del proyecto. Antes de comenzar con la arquitectura o el código, el equipo debe acordar la temática para el proyecto.
+> Objetivos del Issue
+> Proponer ideas de proyectos viables para el tiempo que tenemos.
+> Seleccionar una idea definitiva.
+> Criterios de Aceptación
+> El equipo ha realizado una sesión de lluvia de ideas.
+> Se ha seleccionado la temática final del proyecto.
+> Se ha actualizado el archivo README.md.
+> El README.md incluye una sección breve con la descripción del proyecto.
+
+> Notas Adicionales
+> Cualquier miembro del equipo puede dejar sus propuestas en los comentarios de este Issue usando el siguiente formato:
+> Idea: [Nombre de la idea]
+> Problema que resuelve: [Breve descripción]
+
+> Idea: Generar un Project Board, Backlog, agregar MoSCoW tags, y automatizar manejo de Issues
+> Problema que resuelve: Poder automatizar las Issues nos permitirá tener un flujo de comunicación y trabajo más avanzado:
+> Se crea Issue desde dispositivo local (puede ser a través de un archivo .sh o se genera una template para ello) -> se hace push a la rama de desarrollo del integrante -> workflow automáticamente manda la Issue a crear con sus tags y agregada al Board -> Issue queda disponible para todos los integrantes
+> Nota: Aquí podríamos agregar un cuadro de verificado para comprobar si alguien ya está trabajando en la Issue sin necesidad de entrar hasta el Board, con una tag específica (aparte de las que el Board incluye, o en caso que queramos usar el modelo Sprint, podríamos agregarle una tag de (dev: {nombre del integrante que está trabajando en ella}. También se podrían considerar US, pero en lo personal siento que las Issues bastan. 
+> Sobre el pyproject, me parece bien, sin embargo, tests debería estar dentro de src (ya que son códigos), y me gustaría hacer que la versión del projecto se vaya actualizando según los PR realizados a main. Por último, sobre el Board: no existe. No tenemos un Board creado, ni tags para este tipo de Issues. Personalmente, le asignaría la tag de `dev work`o alguna parecida. Qué opinas? Si ves consiente hacer algún cambio, dime
+
+**Respuesta de la IA completa:**
+```bash
+¡Hola, Lyla! Analizando el Issue de Martin y tu respuesta, veo que estás haciendo un excelente trabajo manteniendo la visión arquitectónica y el orden del proyecto. Tienes toda la razón en tus observaciones.
+
+Aquí tienes mi análisis estratégico sobre cómo abordar estos puntos con el equipo y las soluciones técnicas para tu rama lyla:
+
+1. Sobre ubicar tests dentro de src/
+Tienes toda la razón. Si la regla en CONTRIBUTING.md dicta que todo código fuente va en src/, entonces los tests (que son archivos .py) deben vivir ahí (por ejemplo, en src/tests/).
+Para que esto funcione con el pyproject.toml que actualizamos en el prompt anterior, solo debes cambiar la ruta en la configuración de pytest. Quedaría así:
+
+Ini, TOML
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["src/tests"] # <-- Actualizado para reflejar tu decisión
+2. Sobre la automatización del control de versiones
+Tu idea de actualizar la versión automáticamente según los PRs realizados a main es una práctica madura (se conoce como Semantic Versioning automatizado).
+
+Cómo lo haremos: No se hace modificando el pyproject.toml a mano. Crearemos un Workflow de GitHub Actions en la carpeta .github/workflows/ (por ejemplo release.yml) que se dispare únicamente cuando un PR se fusione con main. Este flujo leerá los commits, calculará si es una versión Major, Minor o Patch, actualizará el pyproject.toml automáticamente y creará un Tag/Release en GitHub.
+
+Nota para tu rama: Si quieres, en nuestro próximo paso te genero este archivo .yml exacto para que lo subas a tu rama.
+
+3. Sobre las ideas de Martin (Issues, Tablero y Automatización)
+Martin tiene mucha iniciativa, pero su propuesta se inclina a sobre-ingenierizar un problema sencillo. Aquí te dejo argumentos técnicos para que los debatan:
+
+Crear Issues desde un .sh local: Es innecesario y propenso a errores. GitHub ya tiene Issue Templates (plantillas predefinidas). Es mucho más profesional crear una carpeta .github/ISSUE_TEMPLATE/ con formatos prearmados. Así, cuando alguien crea un Issue desde la web, ya viene con los MoSCoW tags, la estructura de Historia de Usuario, etc.
+
+Tag de dev: {nombre}: Reinventar la rueda. GitHub tiene de forma nativa la función "Assignees". Si alguien está trabajando en un Issue, simplemente se asigna a sí mismo. No hacen falta tags con nombres de personas.
+
+Tu propuesta de Tag dev work: Es perfecta. De hecho, los estándares suelen usar enhancement (mejoras/nuevas features), bug (errores) y chore o dev work (tareas de mantenimiento y configuración).
+
+El Project Board: Tienes razón, el tablero no se crea solo con código. Alguien (podrías ser tú o Martin) tiene que ir a la pestaña "Projects" del repositorio, crear un tablero Kanban (To Do, In Progress, Review, Done) y vincularlo al repositorio. Una vez creado, sí podemos hacer un workflow que mueva los Issues automáticamente cuando se abren o se cierran mediante PRs.
+
+Registro AI_LOG.md
+Tal como me solicitaste en tus instrucciones estrictas, aquí tienes el bloque exacto para registrar esta interacción. Cópialo y pégalo al final de tu AI_LOG.md:
+
+Markdown
+*  Lyla Alice - Prompt # 7
+*  IA utilizada: Gemini
+*  Prompt del integrante completo: Esto es lo que subió Martin, además de mi respuesta:
+Contexto
+Actualmente el repositorio cuenta con la configuración base, pero necesitamos definir la dirección del proyecto. Antes de comenzar con la arquitectura o el código, el equipo debe acordar la temática para el proyecto.
+Objetivos del Issue
+Proponer ideas de proyectos viables para el tiempo que tenemos.
+Seleccionar una idea definitiva.
+Criterios de Aceptación
+El equipo ha realizado una sesión de lluvia de ideas.
+Se ha seleccionado la temática final del proyecto.
+Se ha actualizado el archivo README.md.
+El README.md incluye una sección breve con la descripción del proyecto.
+
+Notas Adicionales
+Cualquier miembro del equipo puede dejar sus propuestas en los comentarios de este Issue usando el siguiente formato:
+Idea: [Nombre de la idea]
+Problema que resuelve: [Breve descripción]
+
+Idea: Generar un Project Board, Backlog, agregar MoSCoW tags, y automatizar manejo de Issues
+Problema que resuelve: Poder automatizar las Issues nos permitirá tener un flujo de comunicación y trabajo más avanzado:
+Se crea Issue desde dispositivo local (puede ser a través de un archivo .sh o se genera una template para ello) -> se hace push a la rama de desarrollo del integrante -> workflow automáticamente manda la Issue a crear con sus tags y agregada al Board -> Issue queda disponible para todos los integrantes
+Nota: Aquí podríamos agregar un cuadro de verificado para comprobar si alguien ya está trabajando en la Issue sin necesidad de entrar hasta el Board, con una tag específica (aparte de las que el Board incluye, o en caso que queramos usar el modelo Sprint, podríamos agregarle una tag de (dev: {nombre del integrante que está trabajando en ella}. También se podrían considerar US, pero en lo personal siento que las Issues bastan
+
+Sobre el pyproject, me parece bien, sin embargo, tests debería estar dentro de src (ya que son códigos), y me gustaría hacer que la versión del projecto se vaya actualizando según los PR realizados a main
+
+Por último, sobre el Board: no existe. No tenemos un Board creado, ni tags para este tipo de Issues. Personalmente, le asignaría la tag de `dev work`o alguna parecida. Qué opinas? Si ves consiente hacer algún cambio, dime
+*  Respuesta de la IA completa: Validé tus comentarios hacia Martin. Se actualizó la ruta de `testpaths` en el `pyproject.toml` para que apunte a `src/tests`. Te expliqué que la automatización de la versión del proyecto se logra mediante flujos de GitHub Actions al fusionar PRs en `main`. Finalmente, te di argumentos para simplificar la idea de Martin: usar "Issue Templates" en vez de scripts locales `.sh`, usar la función nativa de "Assignees" en lugar de crear tags con nombres de desarrolladores, y te confirmé que alguien debe crear manualmente el Project Board en la interfaz de GitHub antes de poder automatizarlo.
+    *  Qué se aceptó: [Pendiente de llenar por Lyla]
+    *  Qué se denegó: [Pendiente de llenar por Lyla]
+    *  Qué se modificó: [Pendiente de llenar por Lyla]
+¿Te parece si en el siguiente paso diseñamos esos Issue Templates o prefieres que armemos el workflow de .github/workflows/ para el auto-versionado que irá en tu rama lyla?
+```
+**Qué se aceptó:** Acepté el cambio en pyproject.toml
+**Qué se denegó:** Nada
+**Qué se modificó:** Nada
+
+---
+
+# Lyla Alice - Prompt #6
+### IA utilizada: Gemini
+**Prompt del integrante completo:** 
+> Hola! Requiero tu ayuda configurando el pyproject.toml, ya que decidimos cambiar la forma de trabajar: en lugar de una sola rama dev, cada quien tendrá su propia rama (la mía se llama simplemente lyla); y si puedes, revisa la Issue que generó Martin (que noto que tiene el número 3, pero no veo las otras 2 Issues). Igual, te otorgo los actualizados CONTRIBUTING.md, y pyproject.toml que hizo Martin, además creó un requirements-dev.txt (que asumo es el requirements que deberemos usar para las pruebas y desarrollos), los cambios en .github/ estarán en mi rama del repo (ya que no me deja enviarlos directamente, y pegarlos todos podría hacer que te sobreestimules)
+
+**Respuesta de la IA completa:** 
+
+```bash
+¡Hola, Lyla! Qué gusto continuar trabajando en la configuración de EDSIA Beyond. El cambio a ramas personales (como tu rama lyla) es una excelente decisión para evitar colisiones y mantener el orden, lo cual se alinea perfecto con la regla de que la rama main es sagrada y solo se toca mediante PRs.  Aquí tienes mi análisis y las respuestas a tus consultas:1. El Misterio de los Issues #1 y #2Mencionas que Martin creó el Issue #3 pero no ves los otros dos. Esto se debe a una particularidad de GitHub: los Issues y los Pull Requests (PRs) comparten el mismo contador numérico. Si alguien en el equipo creó el PR #1 y el PR #2, el siguiente Issue que se genere tomará automáticamente el ID #3. Revisa la pestaña de Pull Requests de su repositorio y seguramente ahí encontrarás los números faltantes.En cuanto a revisar el Issue #3 de Martin, necesitaré que copies y pegues el texto del Issue en tu próximo mensaje, ya que no tengo acceso directo para leer el interior de su repositorio.2. Revisión y Configuración del pyproject.tomlEl cambio a ramas individuales afecta principalmente a Git y a cómo configurarás tus flujos en la carpeta .github/ (por ejemplo, disparar actions solo al hacer PR hacia main o al hacer push a ramas de desarrolladores), pero no afecta directamente la estructura del pyproject.toml.Revisando el archivo que hizo Martin junto con el requirements-dev.txt y el CONTRIBUTING.md, hizo un muy buen trabajo base, pero le faltan detalles arquitectónicos para ser un paquete moderno válido. Aquí están mis observaciones y la versión corregida:  Puntos Fuertes: Martin configuró el umbral de pruebas para que falle si es menor a 90 (fail_under = 90), respetando estrictamente la guía de contribución. Además, las versiones de las herramientas coinciden con el requirements-dev.txt.  Falta el [build-system]: Para que herramientas modernas reconozcan la tabla [project] que usó Martin, el archivo necesita especificar un sistema de construcción (como setuptools). Si no se incluye, algunos instaladores fallarán.  Ojo con MyPy: Martin colocó ignore_missing_imports = true. Esto es útil para que MyPy no arroje errores si usan librerías externas que no tienen tipos. Sin embargo, deben tener cuidado, ya que la guía prohíbe alterar los ignores solo para forzar los chequeos. Vigilen que este ajuste no oculte errores de tipado en sus propios códigos.  Aquí tienes el pyproject.toml actualizado para que lo subas a tu rama lyla:Ini, TOML[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edsia-beyond"
+version = "0.1.0"
+description = "EDSIA Beyond"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+3. Registro AI_LOG.mdSiguiendo tus instrucciones al pie de la letra, aquí tienes el formato correspondiente a esta intervención para que lo agregues a tu registro:  Markdown*  Lyla Alice - Prompt # 6
+*  IA utilizada: Gemini
+*  Prompt del integrante completo: Hola! Requiero tu ayuda configurando el pyproject.toml, ya que decidimos cambiar la forma de trabajar: en lugar de una sola rama dev, cada quien tendrá su propia rama (la mía se llama simplemente lyla); y si puedes, revisa la Issue que generó Martin (que noto que tiene el número 3, pero no veo las otras 2 Issues). Igual, te otorgo los actualizados CONTRIBUTING.md, y pyproject.toml que hizo Martin, además creó un requirements-dev.txt (que asumo es el requirements que deberemos usar para las pruebas y desarrollos), los cambios en .github/ estarán en mi rama del repo (ya que no me deja enviarlos directamente, y pegarlos todos podría hacer que te sobreestimules)
+*  Respuesta de la IA completa: (Copia y pega toda mi respuesta anterior aquí, incluyendo la explicación de los Issues compartiendo IDs con los PRs y el bloque de código actualizado del `pyproject.toml` con la configuración del build-system).
+    *  Qué se aceptó: [Pendiente de llenar por Lyla]
+    *  Qué se denegó: [Pendiente de llenar por Lyla]
+    *  Qué se modificó: [Pendiente de llenar por Lyla]
+¡Pégame el Issue #3 de Martin cuando estés lista, y si necesitas que te eche una mano armando los flujos CI/CD en la carpeta .github/ para tu rama, solo avísame!
+```
+
+**Qué se aceptó:** Acepté el pyproject.tom
+**Qué se denegó:** Nada
+**Qué se modificó:** Reestructuré el log de IA
+
+---
+
 # Lyla Alice - Prompt #5
 
 ### IA utilizada: Gemini Flash-lite
@@ -1785,7 +2032,8 @@ Esta estructura les dará un entorno de trabajo limpio, ordenado y escalable sin
 
 **Qué se denegó:** No se requería que la IA armara el `README.md` en ese momento ni que analizara los perfiles aún.
 
-<<<<<<< HEAD
+
+
 ---
 
 # Lyla Alice - Prompt #26
@@ -1867,6 +2115,9 @@ DATABASE_URL=sqlite:///./ci_check.db .venv/bin/alembic upgrade head
 **Qué se modificó:** README, configuración, health, frontend, tests, Docker, workflow CI/CD, referencias de documentación y este AI_LOG.
 
 **Qué se modificó:** Se decidió darle a la IA las instrucciones específicas de lo que debía contener el `CONTRIBUTING.md` (o archivo similar) en el siguiente prompt.
-=======
+
 **Qué se modificó:** Se decidió darle a la IA las instrucciones específicas de lo que debía contener el CONTRIBUTING.md (o archivo similar) en el siguiente prompt.
 >>>>>>> e4f5669 (docs: movido log a carpeta correspondiente)
+
+**Qué se modificó:** Se decidió darle a la IA las instrucciones específicas de lo que debía contener el `CONTRIBUTING.md` (o archivo similar) en el siguiente prompt.
+>>>>>>> 06f75ab (docs: agregado logs de Lyla)
