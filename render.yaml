@@ -3,7 +3,17 @@ services:
     name: solaris-monitoring-api
     runtime: docker
     plan: starter
+    branch: main
+    # "commit" y no "checksPass": los commits de versión que empuja semantic-release
+    # usan GITHUB_TOKEN, que no dispara el CI, así que nunca tendrían checks y el
+    # servicio dejaría de desplegar. La calidad ya se valida en el CI del pull request.
+    autoDeployTrigger: commit
     healthCheckPath: /health
+    # Corre en una instancia aparte antes de cambiar el tráfico: si la migración falla,
+    # el deploy se cancela y sigue en línea la versión anterior.
+    preDeployCommand: alembic upgrade head
+    # Sustituye el CMD del Dockerfile, que también migra para docker-compose local.
+    dockerCommand: uvicorn main:app --host 0.0.0.0 --port 8000
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -16,4 +26,4 @@ databases:
   - name: solaris-monitoring-db
     databaseName: solaris_monitoring_db
     user: solaris_user
-    plan: free 
+    plan: free
