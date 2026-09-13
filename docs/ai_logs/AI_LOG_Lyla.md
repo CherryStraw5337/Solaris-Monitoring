@@ -10,6 +10,59 @@
  
 ---
 
+# Lyla Alice - Prompt #25
+### IA Utilizada: GitHub Copilot
+**Prompt del integrante completo:**
+> Bien, el PR fue creado, vamos a lo que sigue: hacer que pase el CI para poder hacer merge. Igualmente, a partir de ahora, y en el resto de chats que tengamos dentro de este repo, cuando hagas tus pruebas de ruff, mypy y pytest, corre los comandos de `checks/test_commands.md`, y siempre agrega el log correspondiente al AI_LOG, de preferencia respetando el que incluyas cada línea de código que tú corres.
+
+**Respuesta de la IA completa:**
+Se revisó `checks/test_commands.md` y se estableció como procedimiento obligatorio ejecutar `ruff check . --fix`, `mypy .` y `pytest .`. Se corrigieron los tipos de retorno de `src/main.py`, las anotaciones del simulador, la declaración tipada del modelo SQLAlchemy y la dependencia faltante de SQLAlchemy. Se añadieron pruebas para el endpoint health, la recepción de lecturas, el modelo y el generador del sensor. También se excluyó del cálculo de cobertura únicamente el bucle infinito de ejecución directa del simulador y se formatearon los archivos con Ruff.
+
+Comandos ejecutados y resultados:
+
+```bash
+ruff check . --fix
+# Falló inicialmente: zsh: command not found: ruff
+
+source .venv/bin/activate && ruff check . --fix
+# All checks passed!
+
+source .venv/bin/activate && mypy .
+# Inicialmente reportó errores de tipos en main.py, sensor_simulado.py y tests/test_health.py.
+
+source .venv/bin/activate && mypy .
+# Success: no issues found in 6 source files
+
+source .venv/bin/activate && pytest .
+# Inicialmente falló al importar models.py porque faltaba sqlalchemy.
+
+source .venv/bin/activate && python -m pip install -r requirements-dev.txt && pytest .
+# 6 passed in 1.14s
+
+source .venv/bin/activate && ruff format .
+# 6 files reformatted
+
+source .venv/bin/activate && ruff format --check .
+# 6 files already formatted
+
+source .venv/bin/activate && mypy src
+# Success: no issues found in 3 source files
+
+source .venv/bin/activate && pytest --cov=src --cov-report=term-missing --cov-report=xml
+# 6 passed; Required test coverage of 90.0% reached. Total coverage: 100.00%
+
+source .venv/bin/activate && ruff check . --fix > checks/ruff.md
+source .venv/bin/activate && mypy . > checks/mypy.md
+source .venv/bin/activate && pytest . > checks/pytest.md
+# Los tres comandos documentados finalizaron correctamente.
+```
+
+**Qué se aceptó:** La corrección necesaria para que el CI pase y el uso de los comandos definidos en `checks/test_commands.md`.
+**Qué se denegó:** N/A.
+**Qué se modificó:** `src/main.py`, `src/models.py`, `src/sensor_simulado.py`, `requirements.txt`, las pruebas en `tests/`, los registros en `checks/` y este AI_LOG.
+
+---
+
 # Lyla Alice - Prompt #24
 ### IA Utilizada: GitHub Copilot
 **Prompt del integrante completo:**
