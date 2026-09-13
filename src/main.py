@@ -8,6 +8,10 @@ from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
 from utils.routers import cells, health, readings
 
+# Importa la función que inicializa tu cliente MQTT desde tu archivo externo
+# (Ajusta el nombre del archivo 'mqtt_listener' si lo llamaste de otra forma)
+from mqtt_listener import start_mqtt_client
+
 API_PREFIX = "/api/v1"
 PUBLIC_DIR = Path(__file__).resolve().parent / "public"
 
@@ -30,11 +34,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title=resolved.api_title,
-        description="API REST para monitoreo de eficiencia de celdas fotovoltaicas",
+        description="API REST y MQTT para monitoreo de eficiencia de celdas fotovoltaicas",
         version=resolved.api_version,
     )
-    # allow_credentials debe ser False mientras el origen sea comodín: el navegador
-    # rechaza la combinación "*" + credenciales.
+    
+    # allow_credentials debe ser False mientras el origen sea comodín
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -42,10 +46,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
     register_exception_handlers(app)
     app.include_router(health.router)
     app.include_router(cells.router, prefix=API_PREFIX)
     app.include_router(readings.router, prefix=API_PREFIX)
+    
+    # Evento de inicio para arrancar tu listener MQTT externo en segundo plano
+    @app.on_event("startup")
+    def startup_event():
+        start_mqtt_client()
+
     # Debe montarse al final: un mount en "/" captura toda ruta no registrada antes.
     app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="landing")
     return app
