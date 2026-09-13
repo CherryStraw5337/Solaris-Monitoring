@@ -1,11 +1,15 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
 from utils.routers import cells, health, readings
 
 API_PREFIX = "/api/v1"
+PUBLIC_DIR = Path(__file__).resolve().parent / "public"
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -28,6 +32,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health.router)
     app.include_router(cells.router, prefix=API_PREFIX)
     app.include_router(readings.router, prefix=API_PREFIX)
+    # Debe montarse al final: un mount en "/" captura toda ruta no registrada antes.
+    app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="landing")
     return app
 
 
