@@ -1,28 +1,34 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from datetime import datetime
-import models
-from database import engine, get_db
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-# Crear las tablas en la base de datos
-models.Base.metadata.create_all(bind=engine)
+from utils.config import Settings
+from utils.exception_handlers import register_exception_handlers
+from utils.routers import cells, health, readings
 
-app = FastAPI(title="EDSIA Beyond API")
+API_PREFIX = "/api/v1"
 
-# Esquema Pydantic para validar los datos de entrada
-class LecturaCreate(BaseModel):
-    timestamp: datetime
-    voltaje: float
-    corriente: float
-    potencia: float
-    energia_acumulada: float
-    punto_id: str
 
-@app.post("/api/v1/lecturas", status_code=201)
-def crear_lectura(lectura: LecturaCreate, db: Session = Depends(get_db)):
-    db_lectura = models.LecturaPanel(**lectura.model_dump())
-    db.add(db_lectura)
-    db.commit()
-    db.refresh(db_lectura)
-    return db_lectura
+def create_app(settings: Settings | None = None) -> FastAPI:
+    resolved = settings if settings is not None else Settings.from_env()
+    app = FastAPI(
+        title=resolved.api_title,
+        description="API REST para monitoreo de eficiencia de celdas fotovoltaicas",
+        version=resolved.api_version,
+    )
+    # allow_credentials debe ser False mientras el origen sea comodín: el navegador
+    # rechaza la combinación "*" + credenciales.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    register_exception_handlers(app)
+    app.include_router(health.router)
+    app.include_router(cells.router, prefix=API_PREFIX)
+    app.include_router(readings.router, prefix=API_PREFIX)
+    return app
+
+
+app = create_app()

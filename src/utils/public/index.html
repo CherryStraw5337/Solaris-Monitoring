@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solaris Monitoring</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        .container {
+            max-width: 600px; 
+            margin: auto; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.15);
+        }
+        h1 { color: #2c3e50; }
+        .badge {
+            background-color: #27ae60;
+            color: white; 
+            padding: 5px 10px; 
+            border-radius: 5px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☀️ SOLARIS MONITORING ☀️</h1>
+        <p>Monitoreo Predictivo de Paneles Solares</p>
+        <span id="service-status" class="badge">Estado de la API: verificando...</span>
+        <p id="update-date">Última actualización: verificando...</p>
+        <p>Proyecto de arquitectura y telemetría de paneles solares.</p>
+    </div>
+    <script>
+        const statusElement = document.getElementById("service-status");
+        const updateDateElement = document.getElementById("update-date");
+        const apiUrl = new URLSearchParams(window.location.search).get("api") || "";
+
+        function updateHealth() {
+            fetch(`${apiUrl}/health`, { cache: "no-store" })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Health check failed");
+                }
+                return response.json();
+            })
+            .then((health) => {
+                statusElement.textContent = `Estado de la API: ${health.service_status}`;
+                statusElement.style.backgroundColor = health.service_status === "operational" ? "#27ae60" : "#f39c12";
+                updateDateElement.textContent = `Última actualización: ${health.update_date}`;
+            })
+            .catch(() => {
+                statusElement.textContent = "Estado de la API: no disponible";
+                statusElement.style.backgroundColor = "#c0392b";
+                updateDateElement.textContent = "Última actualización: no disponible";
+            });
+            }
+
+            updateHealth();
+            window.setInterval(updateHealth, 30000);
+    </script>
+</body>
+</html>
