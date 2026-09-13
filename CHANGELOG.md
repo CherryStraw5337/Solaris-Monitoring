@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.1.0 (2026-09-13)
+
+### Features
+
+- Actualiza landing page con estilos y perfiles de equipo
+  ([`4854eae`](https://github.com/CherryStraw5337/Solaris-Monitoring/commit/4854eaee30d4836bf60f84729cace376cb756557))
+
+
 ## v1.0.1 (2026-09-13)
 
 ### Bug Fixes
