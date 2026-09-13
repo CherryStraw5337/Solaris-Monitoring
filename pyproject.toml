@@ -21,14 +21,9 @@ warn_unused_configs = true
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-
 pythonpath = ["src", "."]
 testpaths = ["tests"]
 addopts = "-v --strict-markers"
-
-pythonpath = ["src"]
-testpaths = ["tests"]
-
 
 [tool.coverage.run]
 source = ["src"]
@@ -42,6 +37,3 @@ exclude_also = [
     "^\\s*\\.\\.\\.$",
     "if TYPE_CHECKING:",
 ]
-
-[tool.semantic_release]
-version_toml = ["pyproject.toml:project.version"]
