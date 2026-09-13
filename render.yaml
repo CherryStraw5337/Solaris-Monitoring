@@ -16,4 +16,4 @@ databases:
   - name: solaris-monitoring-db
     databaseName: solaris_monitoring_db
     user: solaris_user
-    plan: starter  
+    plan: free 
