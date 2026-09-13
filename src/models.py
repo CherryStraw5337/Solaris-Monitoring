@@ -1,17 +1,22 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import Column, DateTime, Float, Integer
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import DateTime, Float, Integer
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
+
 
 class LecturaPanel(Base):
     __tablename__ = "lecturas_panel"
 
-    id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime, default=lambda: datetime.now(UTC))
-    voltaje = Column(Float, nullable=False)
-    corriente = Column(Float, nullable=False)
-    potencia = Column(Float, nullable=False)
-    energia_acumulada = Column(Float, nullable=False)
-    punto_id = Column(Integer, nullable=False, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+    voltaje: Mapped[float] = mapped_column(Float, nullable=False)
+    corriente: Mapped[float] = mapped_column(Float, nullable=False)
+    potencia: Mapped[float] = mapped_column(Float, nullable=False)
+    energia_acumulada: Mapped[float] = mapped_column(Float, nullable=False)
+    punto_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
