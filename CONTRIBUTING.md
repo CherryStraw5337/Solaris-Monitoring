@@ -41,11 +41,11 @@ git checkout -b feature/descripcion-corta main
 pytest
 
 # Verificar cobertura
-pytest --cov=src/solaris_monitoring
+pytest --cov=src
 
 # Validar código
-ruff check src/
-mypy src/
+ruff check .
+mypy src tests
 ```
 
 ### 5. Commit
@@ -65,7 +65,7 @@ git commit -m "Descripción clara del cambio"
 ## Testing
 
 ```bash
-pytest tests/ --cov=src/solaris_monitoring
+pytest --cov=src
 ```
 
 Cobertura mínima: 90%

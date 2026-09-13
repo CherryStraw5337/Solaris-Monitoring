@@ -71,7 +71,7 @@ cp .env.example .env
 
 ```bash
 # Modo desarrollo (auto-reload)
-uvicorn solaris_monitoring.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --app-dir src --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Ejecutar Tests
@@ -81,7 +81,7 @@ uvicorn solaris_monitoring.main:app --reload --host 0.0.0.0 --port 8000
 pytest
 
 # Con reporte de cobertura
-pytest --cov=src/solaris_monitoring --cov-report=html
+pytest --cov=src --cov-report=html
 
 # Tests específicos
 pytest tests/test_cells.py -v
