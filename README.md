@@ -43,7 +43,7 @@ La API utiliza `DATABASE_URL`; consulta `.env.example` para las variables dispon
 src/
 ├── main.py                 # Aplicación FastAPI, gestión global de settings y registro de routers
 ├── db.py                   # Motor, sesión y base SQLAlchemy
-└── utils/
+├── utils/
     ├── config.py           # Configuración centralizada y validación de DEVICE_API_KEY
     ├── dependencies.py     # Inyección de dependencias (verify_api_key, etc.)
     ├── clock.py            # Utilidades de fecha y hora
@@ -53,9 +53,13 @@ src/
     ├── repositories/       # Capa de persistencia
     ├── routers/            # Endpoints HTTP (/health, /api/v1/cells, /api/v1/readings)
     ├── schemas/            # Esquemas Pydantic (contratos de entrada/salida)
-    ├── services/           # Lógica de negocio y casos de uso
-    └── public/
-        └── index.html      # Panel de estado HTML
+    └── services/           # Lógica de negocio y casos de uso
+└── public/
+    ├── resource/
+        └── paneles.jpg # Imagen de paneles para fondo
+    ├── index.html      # Panel de estado HTML
+    ├── main.js         # JS base
+    └── style.css       # Estilizado de páginas
 
 tests/
 ├── conftest.py             # Fixtures compartidas de pytest
@@ -131,11 +135,6 @@ El proyecto documenta el uso de IA en la carpeta [docs/ai_logs/](docs/ai_logs/).
 - **Prompt completo del integrante**
 - **Respuesta de la IA**
 - **Qué se aceptó / modificó / denegó**
-
-**Logs actuales:**
-- [AI_LOG_Lyla.md](docs/ai_logs/AI_LOG_Lyla.md): Historial de implementación de autenticación por API key (Issues #12, #14) - 36 prompts documentados
-
-Antes de abrir un Pull Request, registra los prompts de IA relevantes siguiendo el formato anterior.
 
 ## Licencia
 
