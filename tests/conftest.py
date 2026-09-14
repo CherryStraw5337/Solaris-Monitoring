@@ -1,4 +1,6 @@
 from collections.abc import Iterator
+from typing import Any
+from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
@@ -13,6 +15,13 @@ from utils.config import Settings
 
 # API key para tests
 TEST_API_KEY = "test-api-key-12345"
+
+
+@pytest.fixture(autouse=True)
+def mock_mqtt_start() -> Iterator[Any]:
+    # Intercepta iniciar_mqtt directamente donde es importado y ejecutado (main.py)
+    with patch("main.iniciar_mqtt") as mock_iniciar:
+        yield mock_iniciar
 
 
 @pytest.fixture
