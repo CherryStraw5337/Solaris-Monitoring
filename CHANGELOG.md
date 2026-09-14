@@ -2,6 +2,25 @@
 
 <!-- version list -->
 
+## v1.3.0 (2026-09-14)
+
+### Documentation
+
+- Add PR description and update AI logs (Prompts #35-#36)
+  ([`29628e7`](https://github.com/CherryStraw5337/Solaris-Monitoring/commit/29628e711fe87688694c1a1ecb22a0583c9c5639))
+
+- Update README with authentication, current structure, and AI logs
+  ([`91a4873`](https://github.com/CherryStraw5337/Solaris-Monitoring/commit/91a487322be09f44230dc224993c4f7bf82836aa))
+
+### Features
+
+- Device authentication with API key for write endpoints
+  ([`9d4641d`](https://github.com/CherryStraw5337/Solaris-Monitoring/commit/9d4641d6e5f8606ca6347d8def9789ea34bf47d5))
+
+- Improve photovoltaic dashboard
+  ([`6bdcd80`](https://github.com/CherryStraw5337/Solaris-Monitoring/commit/6bdcd80c2bfd2d973fdabdbcf31766623be2d2d7))
+
+
 ## v1.2.0 (2026-09-13)
 
 ### Features
