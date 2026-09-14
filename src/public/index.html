@@ -1,62 +1,459 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>☀️ MONITOREO SOLAR ☀️ | EDSIA-Beyond</title>
-    <!-- FontAwesome para los íconos -->
+    <title>Solaris Monitoring - Dashboard de Eficiencia Fotovoltaica</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Conexión a tu archivo de estilos -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="h-full overflow-hidden text-slate-200 antialiased">
 
-    <!-- PRIMERA PANTALLA: HERO CON PARALLAX -->
-    <section class="hero-section">
-        <h1 class="hero-title">☀️ MONITOREO SOLAR ☀️</h1>
-        <p class="hero-subtitle">Mantenimiento Predictivo</p>
+<div class="flex h-screen overflow-hidden">
 
-        <!-- SECCIÓN DE INTEGRANTES DEL EQUIPO -->
-        <div class="team-profiles">
-            <!-- Cambia "Eliat" por tu usuario real de GitHub -->
-            <a href="https://github.com/JoseB1342" target="_blank" class="profile">
-                <img src="https://github.com/JoseB1342.png" alt="JoseB1342">
-                <span>JoseB1342</span>
-            </a>
-            
-            <!-- Ejemplo de otro integrante (basado en el link de tu repo) -->
-            <a href="https://github.com/lylaxtraw" target="_blank" class="profile">
-                <img src="https://github.com/lylaxtraw.png" alt="lylaxtraw">
-                <span>lylaxtraw</span>
-            </a>
+    <!-- Fondo oscuro del menú en móvil -->
+    <div id="sidebar-backdrop" class="fixed inset-0 z-30 bg-slate-950/70 hidden md:hidden" onclick="toggleSidebar(false)"></div>
 
-            <a href="https://github.com/martincb858" target="_blank" class="profile">
-                <img src="https://github.com/martincb858.png" alt="martincb858">
-                <span>martincb858</span>
-            </a>
+    <!-- Barra lateral -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between -translate-x-full md:translate-x-0 transition-transform duration-300 flex-shrink-0">
+        <div>
+            <div class="p-5 flex items-center gap-3 border-b border-slate-800">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-slate-950 text-xl shadow-lg shadow-amber-500/20">
+                    <i class="fa-solid fa-solar-panel"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-white leading-none tracking-tight">Solaris<span class="text-amber-500"> Monitoring</span></h1>
+                    <p id="sidebar-version" class="text-xs text-slate-400 mt-1">Monitoreo de celdas</p>
+                </div>
+            </div>
 
-            
-            <!-- Copia y pega el bloque de arriba si son más integrantes -->
+            <nav class="p-4 space-y-1.5" aria-label="Secciones del dashboard">
+                <button data-tab="overview" class="nav-btn">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i><span>Vista general</span>
+                </button>
+                <button data-tab="cells" class="nav-btn">
+                    <i class="fa-solid fa-border-all w-5 text-center"></i><span>Celdas</span>
+                    <span id="cell-count-badge" class="ml-auto bg-slate-800 text-slate-400 text-xs px-2 py-0.5 rounded-full border border-slate-700">0</span>
+                </button>
+                <button data-tab="analytics" class="nav-btn">
+                    <i class="fa-solid fa-chart-line w-5 text-center"></i><span>Análisis de eficiencia</span>
+                </button>
+                <button data-tab="alerts" class="nav-btn">
+                    <i class="fa-solid fa-triangle-exclamation w-5 text-center"></i><span>Anomalías</span>
+                    <span id="alert-count-badge" class="ml-auto bg-red-500/20 text-red-400 font-semibold text-xs px-2 py-0.5 rounded-full border border-red-500/30">0</span>
+                </button>
+                <button data-tab="service" class="nav-btn">
+                    <i class="fa-solid fa-plug-circle-bolt w-5 text-center"></i><span>Estado del servicio</span>
+                </button>
+                <button data-tab="project" class="nav-btn">
+                    <i class="fa-solid fa-users w-5 text-center"></i><span>Proyecto y equipo</span>
+                </button>
+            </nav>
         </div>
 
-        <i class="fa-solid fa-angles-down scroll-indicator"></i>
-    </section>
-
-    <!-- SEGUNDA PANTALLA: CONTENIDO ANIMADO -->
-    <section class="content-section">
-        <div class="glass-card" id="info-card">
-            <h2><i class="fa-solid fa-microchip"></i> ¿Por qué este proyecto?</h2>
-            <p>
-                Decidimos desarrollar este proyecto porque en la actualidad se están optando por las fuentes de energía renovables pero estas aún no se están aprovechando del todo. Por eso trabajamos en hacer este proyecto: para sacar el máximo provecho de nuestros paneles solares y así poder tener un mejor rendimiento de estos.
-            </p>
-            
-            <a href="https://github.com/CherryStraw5337/EDSIA-Beyond" target="_blank" class="btn-github">
-                <i class="fa-brands fa-github fa-xl"></i> Ver Repositorio
-            </a>
+        <div class="p-4 m-3 bg-slate-950/80 rounded-xl border border-slate-800/80">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-slate-400">Estado de la API</span>
+                <span id="api-status-badge" class="flex items-center gap-1.5 text-xs font-medium text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Conectando
+                </span>
+            </div>
+            <p class="text-[11px] text-slate-500 font-mono truncate" id="api-origin-text"></p>
+            <div class="mt-3 pt-2 border-t border-slate-800/60 space-y-1 text-xs text-slate-400">
+                <div class="flex items-center justify-between"><span>Actualización:</span><span id="polling-rate-text" class="font-medium text-slate-300">30 s</span></div>
+                <div class="flex items-center justify-between"><span>Última consulta:</span><span id="last-updated-text" class="font-medium text-slate-300">—</span></div>
+            </div>
         </div>
-    </section>
+    </aside>
 
-    <!-- Conexión a tu archivo de JavaScript -->
-    <script src="main.js"></script>
+    <!-- Contenido principal -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-950">
+
+        <header class="min-h-16 bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 md:px-6 py-3 flex flex-wrap items-center justify-between gap-3 z-20">
+            <div class="flex items-center gap-3 min-w-0">
+                <button class="md:hidden p-2 text-slate-300 hover:text-amber-400" onclick="toggleSidebar(true)" aria-label="Abrir menú">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h2 id="page-title" class="text-base md:text-lg font-bold text-white tracking-wide truncate">Vista general del sistema</h2>
+            </div>
+
+            <div class="flex items-center gap-2 md:gap-3">
+                <label class="sr-only" for="period-select">Período de análisis</label>
+                <select id="period-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500">
+                    <option value="1">Últimas 24 h</option>
+                    <option value="7" selected>Últimos 7 días</option>
+                    <option value="30">Últimos 30 días</option>
+                </select>
+
+                <button id="toggle-stream-btn" onclick="toggleStreaming()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all">
+                    <i id="stream-btn-icon" class="fa-solid fa-pause"></i>
+                    <span id="stream-btn-text">En vivo</span>
+                </button>
+
+                <button onclick="refresh(true)" class="p-2 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg transition-all" title="Actualizar datos" aria-label="Actualizar datos">
+                    <i id="refresh-icon" class="fa-solid fa-rotate"></i>
+                </button>
+
+                <button onclick="exportReadingsCsv()" class="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-all" title="Exportar lecturas a CSV" aria-label="Exportar lecturas a CSV">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+
+            <!-- Aviso de error de conexión -->
+            <div id="error-banner" class="hidden bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-xl px-4 py-3 flex items-start gap-3">
+                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                <div>
+                    <p class="font-semibold">No se pudieron cargar los datos</p>
+                    <p id="error-banner-text" class="text-xs text-red-300/80 mt-0.5"></p>
+                </div>
+            </div>
+
+            <!-- ============ VISTA GENERAL ============ -->
+            <section id="tab-overview" class="tab-content space-y-6">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Celdas activas</span>
+                            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-sm"><i class="fa-solid fa-solar-panel"></i></div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpi-active-cells" class="text-2xl font-bold text-white tracking-tight">—</span>
+                            <span id="kpi-total-cells" class="text-xs font-medium text-slate-400"></span>
+                        </div>
+                        <p id="kpi-active-cells-note" class="mt-2 text-xs text-slate-400">&nbsp;</p>
+                    </div>
+
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Eficiencia promedio</span>
+                            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm"><i class="fa-solid fa-gauge-high"></i></div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpi-avg-efficiency" class="text-2xl font-bold text-emerald-400 tracking-tight">—</span>
+                            <span class="text-xs font-medium text-slate-400">%</span>
+                        </div>
+                        <p class="mt-2 text-xs text-slate-400">Ponderada por lecturas</p>
+                    </div>
+
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Lecturas</span>
+                            <div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-sm"><i class="fa-solid fa-wave-square"></i></div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpi-reading-count" class="text-2xl font-bold text-white tracking-tight">—</span>
+                        </div>
+                        <p class="mt-2 text-xs text-slate-400 period-label">Últimos 7 días</p>
+                    </div>
+
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Anomalías</span>
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpi-anomaly-count" class="text-2xl font-bold text-white tracking-tight">—</span>
+                            <span id="kpi-anomaly-rate" class="text-xs font-medium text-slate-400"></span>
+                        </div>
+                        <p class="mt-2 text-xs text-slate-400 period-label">Últimos 7 días</p>
+                    </div>
+
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Última lectura</span>
+                            <div class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center text-sm"><i class="fa-solid fa-bolt"></i></div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpi-last-voltage" class="text-2xl font-bold text-white tracking-tight">—</span>
+                            <span class="text-xs font-medium text-slate-400">V</span>
+                        </div>
+                        <p id="kpi-last-reading-note" class="mt-2 text-xs text-slate-400 truncate">&nbsp;</p>
+                    </div>
+                </div>
+
+                <div id="no-cells-notice" class="hidden bg-slate-900/90 rounded-2xl p-6 border border-dashed border-slate-700 text-center">
+                    <i class="fa-solid fa-solar-panel text-3xl text-slate-600"></i>
+                    <p class="mt-3 font-semibold text-white">Aún no hay celdas registradas</p>
+                    <p class="text-xs text-slate-400 mt-1">Registra una celda con <code class="text-amber-400">POST /api/v1/cells</code> desde <a href="/docs" class="text-amber-400 underline">/docs</a>. Las escrituras requieren la API key del dispositivo.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col">
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                            <div>
+                                <h3 class="font-bold text-white text-base">Voltaje y eficiencia por lectura</h3>
+                                <p class="text-xs text-slate-400">Últimas 100 lecturas de la celda seleccionada · puntos rojos = anomalía</p>
+                            </div>
+                            <label class="sr-only" for="cell-select">Celda</label>
+                            <select id="cell-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500 max-w-[12rem]"></select>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-4 mb-2 text-xs font-medium">
+                            <span class="flex items-center gap-1.5 text-amber-400"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Voltaje (V)</span>
+                            <span class="flex items-center gap-1.5 text-cyan-400"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Eficiencia (%)</span>
+                            <span class="flex items-center gap-1.5 text-slate-400"><span class="w-4 border-t-2 border-dashed border-slate-400"></span> Umbral de eficiencia</span>
+                        </div>
+                        <div class="flex-1 min-h-[280px] relative">
+                            <canvas id="timelineChart" aria-label="Gráfica de voltaje y eficiencia"></canvas>
+                            <p id="timeline-empty" class="hidden absolute inset-0 flex items-center justify-center text-sm text-slate-500">Sin lecturas para esta celda</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col">
+                        <div class="mb-4">
+                            <h3 class="font-bold text-white text-base">Eficiencia promedio por celda</h3>
+                            <p class="text-xs text-slate-400"><span class="period-label">Últimos 7 días</span> · ámbar = por debajo de su umbral</p>
+                        </div>
+                        <div class="flex-1 min-h-[280px] relative">
+                            <canvas id="efficiencyBarChart" aria-label="Gráfica de eficiencia por celda"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-bold text-white text-base">Estado de las celdas</h3>
+                                <p class="text-xs text-slate-400">Resumen del período por celda</p>
+                            </div>
+                            <button onclick="switchTab('cells')" class="text-xs text-amber-400 hover:text-amber-300 font-medium">
+                                Ver todas <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                        <div id="cell-status-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col">
+                        <h3 class="font-bold text-white text-base mb-1">Últimas anomalías</h3>
+                        <p class="text-xs text-slate-400 mb-4">Lecturas marcadas por la API</p>
+                        <div id="quick-events-list" class="space-y-3 flex-1 overflow-y-auto max-h-[220px] pr-1"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ CELDAS ============ -->
+            <section id="tab-cells" class="tab-content hidden space-y-6">
+                <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Celdas fotovoltaicas</h3>
+                            <p class="text-xs text-slate-400">Selecciona una celda para ver su configuración, resumen y lecturas recientes</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500"></span> Óptima</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500/20 border border-amber-500"></span> Con anomalías</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500/20 border border-red-500"></span> Última lectura anómala</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-500/20 border border-slate-500"></span> Sin datos / inactiva</span>
+                        </div>
+                    </div>
+                    <div id="cell-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+                </div>
+            </section>
+
+            <!-- ============ ANÁLISIS ============ -->
+            <section id="tab-analytics" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl">
+                        <div class="mb-4">
+                            <h3 class="font-bold text-white text-base">Voltaje mínimo, promedio y máximo</h3>
+                            <p class="text-xs text-slate-400"><span class="period-label">Últimos 7 días</span> · comparado con el voltaje nominal de cada celda</p>
+                        </div>
+                        <div class="h-[300px] relative"><canvas id="voltageRangeChart" aria-label="Gráfica de rangos de voltaje"></canvas></div>
+                    </div>
+
+                    <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl">
+                        <div class="mb-4">
+                            <h3 class="font-bold text-white text-base">Causas de anomalía</h3>
+                            <p class="text-xs text-slate-400">Sobre las últimas lecturas cargadas</p>
+                        </div>
+                        <div class="h-[300px] relative">
+                            <canvas id="anomalyCauseChart" aria-label="Gráfica de causas de anomalía"></canvas>
+                            <p id="anomaly-cause-empty" class="hidden absolute inset-0 flex items-center justify-center text-sm text-slate-500">Sin anomalías registradas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl">
+                    <h3 class="font-bold text-white text-base mb-1">Resumen por celda</h3>
+                    <p class="text-xs text-slate-400 mb-4">Datos de <code class="text-amber-400">GET /api/v1/readings/cell/{id}/summary</code> · <span class="period-label">Últimos 7 días</span></p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 uppercase font-semibold">
+                                    <th class="pb-3 px-3">Celda</th>
+                                    <th class="pb-3 px-3 text-right">Lecturas</th>
+                                    <th class="pb-3 px-3 text-right">V mín</th>
+                                    <th class="pb-3 px-3 text-right">V prom</th>
+                                    <th class="pb-3 px-3 text-right">V máx</th>
+                                    <th class="pb-3 px-3 text-right">V nominal</th>
+                                    <th class="pb-3 px-3 text-right">Eficiencia prom</th>
+                                    <th class="pb-3 px-3 text-right">Umbral</th>
+                                    <th class="pb-3 px-3 text-right">Anomalías</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-table-body" class="divide-y divide-slate-800/60"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ ANOMALÍAS ============ -->
+            <section id="tab-alerts" class="tab-content hidden space-y-6">
+                <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Lecturas anómalas</h3>
+                            <p class="text-xs text-slate-400">La causa se estima con la configuración actual de cada celda</p>
+                        </div>
+                        <div class="flex items-center bg-slate-800 p-1 rounded-lg border border-slate-700 text-xs" role="group" aria-label="Filtrar anomalías">
+                            <button data-alert-filter="all" class="alert-filter px-2.5 py-1 rounded font-medium">Todas</button>
+                            <button data-alert-filter="overvoltage" class="alert-filter px-2.5 py-1 rounded font-medium">Sobrevoltaje</button>
+                            <button data-alert-filter="low_efficiency" class="alert-filter px-2.5 py-1 rounded font-medium">Baja eficiencia</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 uppercase font-semibold">
+                                    <th class="pb-3 px-4">Severidad</th>
+                                    <th class="pb-3 px-4">Celda</th>
+                                    <th class="pb-3 px-4">Causa</th>
+                                    <th class="pb-3 px-4 text-right">Voltaje</th>
+                                    <th class="pb-3 px-4 text-right">Eficiencia</th>
+                                    <th class="pb-3 px-4">Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alerts-table-body" class="divide-y divide-slate-800/60"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ ESTADO DEL SERVICIO ============ -->
+            <section id="tab-service" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Estado</span>
+                        <p id="service-status" class="text-xl font-bold text-white mt-1">—</p>
+                    </div>
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Commit desplegado</span>
+                        <p id="service-commit" class="text-xl font-bold text-white mt-1 font-mono truncate">—</p>
+                    </div>
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Rama</span>
+                        <p id="service-branch" class="text-xl font-bold text-white mt-1 font-mono truncate">—</p>
+                    </div>
+                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Fecha de actualización</span>
+                        <p id="service-update-date" class="text-xl font-bold text-white mt-1">—</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl space-y-5">
+                        <div>
+                            <h3 class="font-bold text-white text-lg">Respuesta de <code class="text-amber-400">/health</code></h3>
+                            <p id="service-message" class="text-xs text-slate-400"></p>
+                        </div>
+                        <pre id="json-debugger" class="p-4 bg-slate-950 rounded-xl border border-slate-800/80 text-[11px] font-mono text-emerald-400 overflow-x-auto max-h-64">Cargando…</pre>
+
+                        <div class="pt-4 border-t border-slate-800 flex flex-wrap items-end gap-4">
+                            <div>
+                                <label for="polling-select" class="block text-xs font-semibold text-slate-300 mb-1">Frecuencia de actualización</label>
+                                <select id="polling-select" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-amber-500">
+                                    <option value="15000">15 segundos</option>
+                                    <option value="30000" selected>30 segundos</option>
+                                    <option value="60000">1 minuto</option>
+                                </select>
+                            </div>
+                            <a href="/docs" target="_blank" rel="noopener" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-book"></i> Abrir Swagger
+                            </a>
+                            <a href="/redoc" target="_blank" rel="noopener" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 flex items-center gap-2">
+                                <i class="fa-solid fa-file-lines"></i> ReDoc
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl space-y-4">
+                        <h3 class="font-bold text-white text-base">Endpoints</h3>
+                        <p class="text-xs text-slate-400">Este dashboard solo consulta endpoints públicos de lectura. Las escrituras requieren la API key del dispositivo y no se hacen desde el navegador.</p>
+                        <ul class="space-y-2 text-[11px] font-mono">
+                            <li class="flex gap-2"><span class="text-emerald-400 w-12 shrink-0">GET</span><span class="text-slate-300 break-all">/health</span></li>
+                            <li class="flex gap-2"><span class="text-emerald-400 w-12 shrink-0">GET</span><span class="text-slate-300 break-all">/api/v1/cells</span></li>
+                            <li class="flex gap-2"><span class="text-emerald-400 w-12 shrink-0">GET</span><span class="text-slate-300 break-all">/api/v1/readings</span></li>
+                            <li class="flex gap-2"><span class="text-emerald-400 w-12 shrink-0">GET</span><span class="text-slate-300 break-all">/api/v1/readings/cell/{id}</span></li>
+                            <li class="flex gap-2"><span class="text-emerald-400 w-12 shrink-0">GET</span><span class="text-slate-300 break-all">/api/v1/readings/cell/{id}/summary</span></li>
+                            <li class="flex gap-2 pt-2 border-t border-slate-800"><span class="text-amber-400 w-12 shrink-0">POST</span><span class="text-slate-500 break-all">/api/v1/readings <i class="fa-solid fa-lock ml-1"></i></span></li>
+                            <li class="flex gap-2"><span class="text-amber-400 w-12 shrink-0">POST</span><span class="text-slate-500 break-all">/api/v1/cells <i class="fa-solid fa-lock ml-1"></i></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ PROYECTO Y EQUIPO ============ -->
+            <section id="tab-project" class="tab-content hidden space-y-6">
+                <div class="project-hero rounded-2xl border border-slate-800 min-h-[320px] flex flex-col items-center justify-center text-center p-8">
+                    <h3 class="text-3xl md:text-4xl font-bold text-white tracking-tight">☀️ Monitoreo Solar</h3>
+                    <p class="text-amber-300 mt-2 text-lg">Mantenimiento predictivo</p>
+                    <div class="mt-8 flex flex-wrap justify-center gap-6">
+                        <a href="https://github.com/JoseB1342" target="_blank" rel="noopener" class="group flex flex-col items-center gap-2">
+                            <img src="https://github.com/JoseB1342.png" alt="JoseB1342" class="w-20 h-20 rounded-full border-2 border-amber-400/70 group-hover:scale-105 transition-transform">
+                            <span class="text-sm text-slate-200">JoseB1342</span>
+                        </a>
+                        <a href="https://github.com/lylaxtraw" target="_blank" rel="noopener" class="group flex flex-col items-center gap-2">
+                            <img src="https://github.com/lylaxtraw.png" alt="lylaxtraw" class="w-20 h-20 rounded-full border-2 border-amber-400/70 group-hover:scale-105 transition-transform">
+                            <span class="text-sm text-slate-200">lylaxtraw</span>
+                        </a>
+                        <a href="https://github.com/martincb858" target="_blank" rel="noopener" class="group flex flex-col items-center gap-2">
+                            <img src="https://github.com/martincb858.png" alt="martincb858" class="w-20 h-20 rounded-full border-2 border-amber-400/70 group-hover:scale-105 transition-transform">
+                            <span class="text-sm text-slate-200">martincb858</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl">
+                    <h3 class="font-bold text-white text-lg flex items-center gap-2"><i class="fa-solid fa-microchip text-amber-400"></i> ¿Por qué este proyecto?</h3>
+                    <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+                        Decidimos desarrollar este proyecto porque en la actualidad se están optando por las fuentes de energía renovables pero estas aún no se están aprovechando del todo. Por eso trabajamos en hacer este proyecto: para sacar el máximo provecho de nuestros paneles solares y así poder tener un mejor rendimiento de estos.
+                    </p>
+                    <a href="https://github.com/CherryStraw5337/EDSIA-Beyond" target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 text-sm border border-slate-700">
+                        <i class="fa-brands fa-github fa-lg"></i> Ver repositorio
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- Detalle de celda -->
+<div id="cell-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4" onclick="if (event.target === this) closeCellModal()">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-cell-title">
+        <button onclick="closeCellModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg" aria-label="Cerrar">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="flex items-center gap-3 mb-5">
+            <div id="modal-cell-badge" class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 font-bold text-lg flex items-center justify-center border border-amber-500/20">#</div>
+            <div class="min-w-0">
+                <h3 id="modal-cell-title" class="text-lg font-bold text-white truncate">Celda</h3>
+                <p id="modal-cell-subtitle" class="text-xs text-slate-400 truncate"></p>
+            </div>
+        </div>
+        <div id="modal-cell-body"></div>
+    </div>
+</div>
+
+<div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none" aria-live="polite"></div>
+
+<script src="main.js"></script>
 </body>
 </html>
