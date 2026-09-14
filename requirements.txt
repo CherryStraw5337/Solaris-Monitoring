@@ -4,3 +4,4 @@ sqlalchemy==2.0.51
 alembic==1.18.5
 psycopg[binary]==3.2.10
 pydantic==2.13.4
+paho-mqtt==2.1.0

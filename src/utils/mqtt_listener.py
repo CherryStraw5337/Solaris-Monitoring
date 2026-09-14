@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 import random
+from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any
 
 import paho.mqtt.client as mqtt
@@ -11,18 +14,42 @@ from db import SessionLocal  # Importa tu sesión de base de datos
 from utils.models import Reading  # Importante para instanciar el objeto de lectura
 from utils.repositories.reading_repo import SqlAlchemyReadingRepository
 
-# Credenciales de tu HiveMQ Cloud
-MQTT_BROKER = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud"
-MQTT_PORT = 8883
-MQTT_USER = "test"  # Usuario corregido
-MQTT_PASSWORD = "13422004"  # Contraseña de tu usuario
-MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"
+DEFAULT_MQTT_PORT = 8883
+DEFAULT_MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"
 
 
-def on_connect(client: Any, userdata: Any, flags: Any, reason_code: int) -> None:
+@dataclass(frozen=True, slots=True)
+class MqttConfig:
+    host: str
+    port: int
+    username: str
+    password: str
+    topic: str
+
+    @classmethod
+    def from_env(cls, env: Mapping[str, str] | None = None) -> MqttConfig | None:
+        source: Mapping[str, str] = os.environ if env is None else env
+        host = source.get("MQTT_HOST")
+        if not host:
+            return None
+        missing = [key for key in ("MQTT_USERNAME", "MQTT_PASSWORD") if not source.get(key)]
+        if missing:
+            raise ValueError(f"MQTT_HOST está definido pero faltan: {', '.join(missing)}")
+        return cls(
+            host=host,
+            port=int(source.get("MQTT_PORT", DEFAULT_MQTT_PORT)),
+            username=source["MQTT_USERNAME"],
+            password=source["MQTT_PASSWORD"],
+            topic=source.get("MQTT_TOPIC", DEFAULT_MQTT_TOPIC),
+        )
+
+
+def on_connect(
+    client: Any, userdata: MqttConfig, flags: Any, reason_code: Any, properties: Any = None
+) -> None:
     if reason_code == 0:
         print("Conectado exitosamente al broker MQTT desde FastAPI")
-        client.subscribe(MQTT_TOPIC)
+        client.subscribe(userdata.topic)
     else:
         print(f"Error de conexión MQTT, código: {reason_code}")
 
@@ -70,7 +97,13 @@ def on_message(client: Any, userdata: Any, msg: Any) -> None:
         print(f"Error procesando el mensaje MQTT: {e}")
 
 
-def iniciar_mqtt() -> None:
+def iniciar_mqtt(env: Mapping[str, str] | None = None) -> Any:
+    config = MqttConfig.from_env(env)
+    if config is None:
+        # Sin broker configurado la API sigue funcionando: HTTP es el canal principal.
+        print("MQTT deshabilitado: MQTT_HOST no está definido")
+        return None
+
     try:
         # Generar un ID único para el cliente de Python para evitar bloqueos del broker
         client_id = "FastAPI-Subscriber-" + str(random.randint(0, 0xFFFF))
@@ -78,17 +111,20 @@ def iniciar_mqtt() -> None:
         client = mqtt.Client(
             client_id=client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2
         )
-        client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
+        client.username_pw_set(config.username, config.password)
 
         # Configurar TLS obligatorio para HiveMQ Cloud
         client.tls_set()
 
+        client.user_data_set(config)
         client.on_connect = on_connect
         client.on_message = on_message
 
-        print(f"Intentando conectar sincrónicamente a HiveMQ ({MQTT_BROKER}:{MQTT_PORT})...")
+        print(f"Intentando conectar al broker MQTT ({config.host}:{config.port})...")
 
-        client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        client.connect(config.host, config.port, 60)
         client.loop_start()
+        return client
     except Exception as e:
         print(f"✗ Error crítico al iniciar el cliente MQTT: {e}")
+        return None

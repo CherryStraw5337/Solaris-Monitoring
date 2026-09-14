@@ -25,6 +25,16 @@ services:
       # sincronizar. La clave se agrega a mano en Environment del servicio.
       - key: DEVICE_API_KEY
         sync: false
+      # MQTT es opcional: sin MQTT_HOST la API arranca y solo recibe lecturas por HTTP.
+      # Igual que DEVICE_API_KEY, los valores se cargan a mano en Environment.
+      - key: MQTT_HOST
+        sync: false
+      - key: MQTT_USERNAME
+        sync: false
+      - key: MQTT_PASSWORD
+        sync: false
+      - key: MQTT_TOPIC
+        value: solaris/edsia_beyond/cell_1/voltage
 
 databases:
   - name: solaris-monitoring-db
