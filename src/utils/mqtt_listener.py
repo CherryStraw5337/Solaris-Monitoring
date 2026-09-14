@@ -1,8 +1,8 @@
-from typing import Any
 from __future__ import annotations
 
 import json
 import random
+from typing import Any
 
 import paho.mqtt.client as mqtt
 from sqlalchemy.orm import Session

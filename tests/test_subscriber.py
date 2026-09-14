@@ -1,4 +1,5 @@
 from typing import Any
+
 import paho.mqtt.client as mqtt
 
 MQTT_BROKER = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud"
@@ -8,12 +9,11 @@ MQTT_PASSWORD = "13422004"
 MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"
 
 
-def on_connect(client: Any, userdata: Any, flags: Any, reason_code: int, properties: Any = None) -> None:
+def on_connect(
+    client: Any, userdata: Any, flags: Any, reason_code: int, properties: Any = None
+) -> None:
     if reason_code == 0:
         print(">>> [TEST] Conectado al broker con éxito. Suscribiendo al topic...")
-        client.subscribe(MQTT_TOPIC)
-    else:
-        print(f">>> [TEST] Error de conexión, código: {reason_code}")
 
 
 def on_message(client: Any, userdata: Any, msg: Any) -> None:
