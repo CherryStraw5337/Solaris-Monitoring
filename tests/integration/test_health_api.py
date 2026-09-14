@@ -13,7 +13,7 @@ def test_root_identifies_the_api(client: TestClient) -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "MONITOREO SOLAR" in response.text
+    assert "Solaris Monitoring" in response.text
 
 
 def test_landing_is_served_from_src_public() -> None:

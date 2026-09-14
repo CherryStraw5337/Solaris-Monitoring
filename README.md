@@ -9,7 +9,7 @@ API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia,
 - Persistencia con SQLAlchemy y migraciones Alembic.
 - PostgreSQL en Docker y SQLite para desarrollo y pruebas.
 - Arquitectura separada por routers, servicios, repositorios, esquemas y dominio.
-- Panel HTML servido por `/` y actualizado con el estado de `/health`.
+- Dashboard web en `/` con eficiencia, anomalías y resumen por celda, alimentado solo por endpoints `GET` públicos.
 - CI/CD con Ruff, Mypy, Pytest, cobertura mínima del 90 %, migraciones y build Docker.
 - Endpoints protegidos para escritura (POST/PUT/DELETE) con validación de API key.
 - Endpoints públicos para lectura (GET) sin autenticación.
@@ -43,6 +43,7 @@ La API utiliza `DATABASE_URL`; consulta `.env.example` para las variables dispon
 src/
 ├── main.py                 # Aplicación FastAPI, gestión global de settings y registro de routers
 ├── db.py                   # Motor, sesión y base SQLAlchemy
+├── public/                 # Dashboard web servido en / (index.html, main.js, style.css)
 └── utils/
     ├── config.py           # Configuración centralizada y validación de DEVICE_API_KEY
     ├── dependencies.py     # Inyección de dependencias (verify_api_key, etc.)
@@ -53,9 +54,7 @@ src/
     ├── repositories/       # Capa de persistencia
     ├── routers/            # Endpoints HTTP (/health, /api/v1/cells, /api/v1/readings)
     ├── schemas/            # Esquemas Pydantic (contratos de entrada/salida)
-    ├── services/           # Lógica de negocio y casos de uso
-    └── public/
-        └── index.html      # Panel de estado HTML
+    └── services/           # Lógica de negocio y casos de uso
 
 tests/
 ├── conftest.py             # Fixtures compartidas de pytest
