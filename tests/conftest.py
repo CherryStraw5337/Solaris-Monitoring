@@ -1,4 +1,6 @@
 from collections.abc import Iterator
+from typing import Any
+from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
@@ -13,6 +15,14 @@ from utils.config import Settings
 
 # API key para tests
 TEST_API_KEY = "test-api-key-12345"
+
+
+@pytest.fixture(autouse=True)
+def mock_mqtt_start() -> Iterator[Any]:
+    # Bloquea directamente la clase Client de la librería Paho MQTT
+    # Esto asegura que ninguna conexión real ocurra durante los tests.
+    with patch("utils.mqtt_listener.mqtt.Client") as mock_client_class:
+        yield mock_client_class
 
 
 @pytest.fixture
