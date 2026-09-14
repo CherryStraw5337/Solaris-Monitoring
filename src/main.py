@@ -50,7 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(readings.router, prefix=API_PREFIX)
 
     @app.on_event("startup")
-    def startup_event():
+    def startup_event()-> None:
         # Crea las tablas automáticamente (soluciona el error de "no such table")
         Base.metadata.create_all(bind=engine)
         # Arranca tu listener MQTT en segundo plano

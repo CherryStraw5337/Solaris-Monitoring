@@ -1,3 +1,4 @@
+from typing import Any
 from __future__ import annotations
 
 import json
@@ -18,7 +19,7 @@ MQTT_PASSWORD = "13422004"  # Contraseña de tu usuario
 MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"
 
 
-def on_connect(client, userdata, flags, reason_code, properties=None):
+def on_connect(client: Any, userdata: Any, flags: Any, reason_code: int) -> None:
     if reason_code == 0:
         print("Conectado exitosamente al broker MQTT desde FastAPI")
         client.subscribe(MQTT_TOPIC)
@@ -26,7 +27,7 @@ def on_connect(client, userdata, flags, reason_code, properties=None):
         print(f"Error de conexión MQTT, código: {reason_code}")
 
 
-def on_message(client, userdata, msg):
+def on_message(client: Any, userdata: Any, msg: Any) -> None:
     try:
         # 1. Decodificar el JSON que manda el ESP32
         payload_str = msg.payload.decode("utf-8")
@@ -69,7 +70,7 @@ def on_message(client, userdata, msg):
         print(f"Error procesando el mensaje MQTT: {e}")
 
 
-def start_mqtt_client():
+def iniciar_mqtt() -> None:
     try:
         # Generar un ID único para el cliente de Python para evitar bloqueos del broker
         client_id = "FastAPI-Subscriber-" + str(random.randint(0, 0xFFFF))
