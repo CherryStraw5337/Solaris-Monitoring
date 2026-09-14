@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from mqtt_listener import start_mqtt_client
+from utils.mqtt_listener import start_mqtt_client
 
 from db import engine  # Importa el engine de la base de datos
 from utils.config import Settings
