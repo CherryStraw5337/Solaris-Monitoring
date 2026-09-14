@@ -74,3 +74,4 @@ coverage.xml
 # Auditory
 revision.md
 pr_description.md
+secrets.h
