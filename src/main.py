@@ -8,7 +8,7 @@ from db import engine  # Importa el engine de la base de datos
 from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
 from utils.models import Base  # Importa la base de modelos SQLAlchemy
-from utils.mqtt_listener import start_mqtt_client
+from utils.mqtt_listener import iniciar_mqtt
 from utils.routers import cells, health, readings
 
 API_PREFIX = "/api/v1"
@@ -54,7 +54,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # Crea las tablas automáticamente (soluciona el error de "no such table")
         Base.metadata.create_all(bind=engine)
         # Arranca tu listener MQTT en segundo plano
-        start_mqtt_client()
+        iniciar_mqtt()
 
     app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="landing")
     return app
