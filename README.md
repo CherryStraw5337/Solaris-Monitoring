@@ -117,6 +117,8 @@ La cobertura mínima está definida en `pyproject.toml` y es del 90 %.
 
 El `Dockerfile` ejecuta las migraciones antes de iniciar Uvicorn. `render.yaml` contiene la configuración base para Render. La documentación adicional está en [docs/API.md](docs/API.md), [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) y [docs/ESP32_INTEGRATION.md](docs/ESP32_INTEGRATION.md).
 
+Deploy en Render: [https://solaris-monitoring-api.onrender.com/](https://solaris-monitoring-api.onrender.com/)
+
 ## Contribución
 
 Usa ramas de trabajo, añade pruebas para los cambios y ejecuta las validaciones del CI antes de abrir un Pull Request.
