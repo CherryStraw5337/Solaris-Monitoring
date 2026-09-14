@@ -3,12 +3,12 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from utils.mqtt_listener import start_mqtt_client
 
 from db import engine  # Importa el engine de la base de datos
 from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
 from utils.models import Base  # Importa la base de modelos SQLAlchemy
+from utils.mqtt_listener import start_mqtt_client
 from utils.routers import cells, health, readings
 
 API_PREFIX = "/api/v1"
