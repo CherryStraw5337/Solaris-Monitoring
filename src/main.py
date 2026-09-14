@@ -3,13 +3,13 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from mqtt_listener import start_mqtt_client
 
 from db import engine  # Importa el engine de la base de datos
-from utils.models import Base  # Importa la base de modelos SQLAlchemy
 from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
+from utils.models import Base  # Importa la base de modelos SQLAlchemy
 from utils.routers import cells, health, readings
-from mqtt_listener import start_mqtt_client
 
 API_PREFIX = "/api/v1"
 PUBLIC_DIR = Path(__file__).resolve().parent / "public"
@@ -35,7 +35,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         description="API REST y MQTT para monitoreo de eficiencia de celdas fotovoltaicas",
         version=resolved.api_version,
     )
-    
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -43,12 +43,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
+
     register_exception_handlers(app)
     app.include_router(health.router)
     app.include_router(cells.router, prefix=API_PREFIX)
     app.include_router(readings.router, prefix=API_PREFIX)
-    
+
     @app.on_event("startup")
     def startup_event():
         # Crea las tablas automáticamente (soluciona el error de "no such table")

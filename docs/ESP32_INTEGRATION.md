@@ -428,6 +428,7 @@ Conversión:
 ```python
 # En la terminal serial
 import machine
+
 adc = machine.ADC(machine.Pin(36))
 for i in range(10):
     print(adc.read())
@@ -438,6 +439,7 @@ for i in range(10):
 
 ```python
 import network
+
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect("SSID", "PASSWORD")
