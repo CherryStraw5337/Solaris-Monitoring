@@ -19,9 +19,10 @@ TEST_API_KEY = "test-api-key-12345"
 
 @pytest.fixture(autouse=True)
 def mock_mqtt_start() -> Iterator[Any]:
-    # Intercepta iniciar_mqtt directamente donde es importado y ejecutado (main.py)
-    with patch("main.iniciar_mqtt") as mock_iniciar:
-        yield mock_iniciar
+    # Bloquea directamente la clase Client de la librería Paho MQTT
+    # Esto asegura que ninguna conexión real ocurra durante los tests.
+    with patch("utils.mqtt_listener.mqtt.Client") as mock_client_class:
+        yield mock_client_class
 
 
 @pytest.fixture
