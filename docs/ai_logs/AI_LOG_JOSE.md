@@ -36,7 +36,7 @@ Se identificó que el usuario tenía dos brokers serverless activos y que probab
 # José B - Prompt #3
 ### IA utilizada: Gemini (Google)
 **Prompt del integrante completo:**
-> ahora me dice que error al conectar con hiveMQ #include <WiFi.h> #include <WiFiClientSecure.h> #include <PubSubClient.h> #include <Arduino.h> // ===== Configuración de Red ===== const char* SSID = "Megacable_2.4G_24DA"; const char* PASSWORD = "B77cfMq13422004"; ... const char* mqtt_server = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud"; const int MQTT_PORT = 8883; const char* MQTT_USER = "JoseB"; const char* MQTT_PASSWORD = "13422004"; const char* MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"; ... void setup() { ... client.setServer(MQTT_USER, MQTT_PORT); } ... [código completo del sketch de Arduino]
+> ahora me dice que error al conectar con hiveMQ #include <WiFi.h> #include <WiFiClientSecure.h> #include <PubSubClient.h> #include <Arduino.h> // ===== Configuración de Red ===== const char* SSID = "INTERNET"; const char* PASSWORD = "PASSWORD"; ... const char* mqtt_server = "NADA"; const int MQTT_PORT = 8883; const char* MQTT_USER = "user"; const char* MQTT_PASSWORD = "PASSWORD"; const char* MQTT_TOPIC = "TAMPOCO"; ... void setup() { ... client.setServer(MQTT_USER, MQTT_PORT); } ... [código completo del sketch de Arduino]
 
 **Respuesta de la IA completa:**
 Se detectó un error tipográfico: en `setup()` se pasaba `MQTT_USER` en lugar de `mqtt_server` a `client.setServer()`. Se indicó corregir esa línea.
@@ -106,7 +106,7 @@ Se solicitó el código completo del ESP32 (Arduino) y del archivo `mqtt_listene
 # José B - Prompt #8
 ### IA utilizada: Gemini (Google)
 **Prompt del integrante completo:**
-> codigo arduino #include <WiFi.h> #include <WiFiClientSecure.h> #include <PubSubClient.h> #include <Arduino.h> ... const int MQTT_PORT = 8884; // Puerto seguro obligatorio ... const char* MQTT_USER = "JoseB"; const char* MQTT_PASSWORD = "13422004"; const char* MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"; ... void setup() { ... client.setServer(mqtt_server, MQTT_PORT); } ... [resto del sketch: connect_wifi, reconnect_mqtt, send_reading_mqtt]
+> codigo arduino #include <WiFi.h> #include <WiFiClientSecure.h> #include <PubSubClient.h> #include <Arduino.h> ... const int MQTT_PORT = 8884; // Puerto seguro obligatorio ... const char* MQTT_USER = "User"; const char* MQTT_PASSWORD = "PASSWORD"; const char* MQTT_TOPIC = "MQTT"; ... void setup() { ... client.setServer(mqtt_server, MQTT_PORT); } ... [resto del sketch: connect_wifi, reconnect_mqtt, send_reading_mqtt]
 
 **Respuesta de la IA completa:**
 Se detectó que el puerto seguía en 8884 (WebSockets) en lugar de 8883 (MQTT/TLS nativo, requerido por `PubSubClient`), lo cual bloqueaba silenciosamente la conexión; se entregó el sketch corregido con `MQTT_PORT = 8883` y se recordó ajustar también el puerto en `mqtt_listener.py`.
@@ -120,7 +120,7 @@ Se detectó que el puerto seguía en 8884 (WebSockets) en lugar de 8883 (MQTT/TL
 # José B - Prompt #9
 ### IA utilizada: Gemini (Google)
 **Prompt del integrante completo:**
-> listener import json import paho.mqtt.client as mqtt from sqlalchemy.orm import Session from db import SessionLocal from utils.repositories.reading_repo import SqlAlchemyReadingRepository from utils.services.reading_service import ReadingService MQTT_BROKER = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud" MQTT_PORT = 8883 MQTT_USER = "JoseB" MQTT_PASSWORD = "13422004" MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage" def on_connect(client, userdata, flags, rc, properties=None): if rc == 0: print("Conectado exitosamente al broker MQTT desde FastAPI") client.subscribe(MQTT_TOPIC) else: print(f"Error de conexión MQTT, código: {rc}") ... [resto del listener con firma antigua de callbacks]
+> listener import json import paho.mqtt.client as mqtt from sqlalchemy.orm import Session from db import SessionLocal from utils.repositories.reading_repo import SqlAlchemyReadingRepository from utils.services.reading_service import ReadingService MQTT_BROKER = "77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud" MQTT_PORT = 8883 MQTT_USER = "User" MQTT_PASSWORD = "PASSWORD" MQTT_TOPIC = "MQTT" def on_connect(client, userdata, flags, rc, properties=None): if rc == 0: print("Conectado exitosamente al broker MQTT desde FastAPI") client.subscribe(MQTT_TOPIC) else: print(f"Error de conexión MQTT, código: {rc}") ... [resto del listener con firma antigua de callbacks]
 
 **Respuesta de la IA completa:**
 Se detectó que `on_connect` usaba la firma antigua de paho-mqtt v1.x (`rc`) mientras el cliente se inicializaba con `CallbackAPIVersion.VERSION2`, lo que generaba un error silencioso que impedía ejecutar `subscribe()`. Se entregó la versión corregida con la firma `reason_code`.
