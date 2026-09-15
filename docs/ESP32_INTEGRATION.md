@@ -292,7 +292,7 @@ const int MQTT_PORT = PUERTO; // CORREGIDO: Puerto 8883 obligatorio para PubSubC
 const char* MQTT_USER = "tu usuario"; 
 const char* MQTT_PASSWORD = "tu contraseña"; 
 
-const char* MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage";
+const char* MQTT_TOPIC = "MQTT";
 
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
