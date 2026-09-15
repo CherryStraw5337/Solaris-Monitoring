@@ -74,7 +74,6 @@ docs/
 ├── ESP32_INTEGRATION.md    # Integración con dispositivos IoT ESP32
 ├── adr/                    # Architecture Decision Records
 └── ai_logs/                # Historiales de prompts y decisiones de IA
-    └── AI_LOG_Lyla.md      # Log de prompts de Lyla Alice (Issues #12, #14)
 ```
 
 ## Endpoints
