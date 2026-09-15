@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import json
-from typing import Any
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
 from utils.config import Settings
 from utils.mqtt_adapter import MQTTAdapter
-from utils.schemas.reading import ReadingCreate
 
 
 @pytest.fixture
