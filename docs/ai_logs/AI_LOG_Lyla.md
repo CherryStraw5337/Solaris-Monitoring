@@ -10,6 +10,208 @@
  
 ---
 
+# Lyla Alice - Prompt #39
+
+### IA Utilizada: GitHub Copilot (Claude Haiku 4.5)
+
+**Prompt del integrante completo:**
+> Este es el trabajo de hoy:
+> # `[Dev]: Ingesta de lecturas por MQTT como canal especializado para IoT`
+> 
+> ### Problema que resuelve / Historia de Usuario
+> 
+> Como **dispositivo IoT con conexión intermitente y poca batería**, quiero publicar mis lecturas por MQTT, para usar un protocolo ligero pensado para sensores en lugar de abrir una conexión HTTP completa en cada medición.
+> 
+> Esto especializa el producto para IoT y aporta a **Diseño técnico** y al *sello de innovación*.
+> 
+> Contexto técnico:
+> - **Render no puede alojar un broker MQTT:** un web service solo expone un puerto HTTP. Usar un **broker gestionado** (por ejemplo HiveMQ Cloud o EMQX Serverless, que tienen planes gratuitos; verificar condiciones) con **TLS (puerto 8883) y usuario/contraseña**. La API se conecta como **cliente suscriptor**.
+> - Topic sugerido: `solaris/cells/{cell_id}/readings`, con payload JSON `{"voltage_measured": 4.85, "timestamp": "..."}` y QoS 1.
+> - **Arquitectura (SOLID):** el suscriptor es solo otro *adaptador de entrada*, igual que el router HTTP. Valida el payload con el mismo `ReadingCreate` y llama al mismo `ReadingService.create`. **No se duplica ninguna regla de negocio** ni se modifica el dominio.
+> - Arrancar y detener el cliente en el `lifespan` de FastAPI. Hoy Render corre **un solo proceso** (`dockerCommand` sin `--workers`). Con varios workers, cada uno se suscribiría y la lectura se guardaría repetida.
+> - Un payload inválido o una celda inexistente **no deben tumbar** el suscriptor: se registra en logs y se descarta.
+> - **Alcance:** es la issue más grande. Si no está integrada y en verde el **15 sep a las 18:00**, no se hace merge: HTTP sigue siendo el canal funcional.
+> 
+> ### Criterios de Aceptación
+> 
+> - [ ] **ADR-0002** en `docs/adr/` que explique por qué MQTT, qué broker, alternativas descartadas, y el visto bueno de la coordinación (cambio de alcance después de la Compuerta 1).
+> - [ ] Credenciales del broker solo por variables de entorno (`MQTT_HOST`, `MQTT_PORT`, `MQTT_USERNAME`, `MQTT_PASSWORD`, `MQTT_TOPIC`), en `render.yaml` como `sync: false` y en `.env.example`.
+> - [ ] Si `MQTT_HOST` no está definido, la API arranca normal sin MQTT (en local y en tests).
+> - [ ] Una lectura publicada en el topic queda guardada con la eficiencia y la anomalía calculadas, igual que por HTTP.
+> - [ ] Payload inválido, celda inexistente o celda inactiva: se registra en logs y el suscriptor sigue funcionando.
+> - [ ] Tests (TDD) del adaptador con un cliente MQTT falso, **sin broker real en CI**: mensaje válido, JSON inválido, celda inexistente y `cell_id` extraído del topic.
+> - [ ] `/health` informa el estado de la conexión MQTT (`connected`, `disconnected` o `disabled`).
+> - [ ] Ejemplo de publicación desde el ESP32 (`PubSubClient`) o con `mosquitto_pub`, documentado en `docs/ESP32_INTEGRATION.md`.
+> - [ ] Demostrado en producción: una publicación aparece en `GET /api/v1/readings`.
+> - [ ] Cobertura ≥ 90 %, ruff y mypy limpios.
+> 
+> ### Prioridad MoSCoW
+> 
+> **Could have (Podría tener)**
+> 
+> Como podrás notar, ya llevo avances, pero dudo que estén correctos. Aparte de esta Issue que hay que resolver, por favor, agrega estos logs a mi log (serían los 37 y 38, y el que generes de este prompt el 39)
+
+**Respuesta de la IA completa:**
+
+Se inició la planificación para la ingesta MQTT como nuevo adaptador de entrada especializado para IoT. Los prompts 37 y 38 fueron completados por Gemini con una guía estructurada en 4 pasos principales.
+
+**Resumen de Prompts Previos (37-38 por Gemini):**
+- **Prompt #37:** ADR-0002 creado documentando decisión de usar HiveMQ Cloud Serverless con TLS 8883
+- **Prompt #38:** Configuración de variables MQTT en .env.example y render.yaml con `sync: false` para credenciales sensibles
+
+**Plan de Implementación Estructurado (4 Pasos):**
+1. ✅ **Paso 1:** ADR-0002 y arquitectura base (broker gestionado, justificación técnica)
+2. ✅ **Paso 2:** Variables de entorno seguras (.env.example y render.yaml)
+3. ⏳ **Paso 3:** Integración en FastAPI lifespan event y manejo de errores resiliente
+4. ⏳ **Paso 4:** Documentación IoT (ESP32_INTEGRATION.md) y pruebas unitarias sin broker real
+
+**Criticalidad y Deadline:**
+- **Scope:** Could have (si no está integrado antes del 15 sep 18:00, HTTP sigue siendo funcional)
+- **Criterios clave:** MQTT_HOST opcional, payload inválido no tumba suscriptor, /health reporta estado
+- **Cobertura:** Mínimo 90% (incluyendo tests del adaptador MQTT)
+
+**Próximos Pasos Inmediatos:**
+- Paso 3: Implementar lifespan event en src/main.py para arranque/parada de cliente MQTT
+- Crear adaptador MQTT con manejo robusto de errores (try/except con logging)
+- Tests unitarios con mock MQTT (sin broker real en CI)
+- Actualizar /health para reportar estado MQTT (connected/disconnected/disabled)
+
+**Qué se aceptó:** Planificación estructurada en 4 pasos, prompts 37-38 de Gemini documentados, deadline claro (15 sep 18:00).
+**Qué se denegó:** N/A.
+**Qué se modificó:** Se referencian los prompts 37 y 38 generados por Gemini en paso previo.
+
+---
+
+# Lyla Alice - Prompt #38
+
+### IA Utilizada: Gemini
+
+**Prompt del integrante completo:**
+> Vamos al paso 2. Recuerda revisar el repo antes de cualquier cambio
+
+**Respuesta de la IA completa:**
+
+¡Listo! Entendido. He revisado el repositorio de "Solaris Monitoring" (CherryStraw5337/Solaris-Monitoring) y procedo a indicarte cómo configurar el paso 2: la declaración segura de variables de entorno, junto con la actualización de tu bitácora de IA (`AI_LOG.md`).
+
+**Paso 2: Configuración de Variables de Entorno y `render.yaml`**
+
+El objetivo aquí es asegurar que el servidor en Render pueda conectarse al broker MQTT, pero sin exponer ninguna credencial en el código fuente.
+
+**1. Actualización de `.env.example`**
+
+En la raíz de tu proyecto, abre (o crea si no existe) el archivo `.env.example`. Añade las siguientes líneas. Este archivo sirve como plantilla para que otros desarrolladores sepan qué variables deben configurar en su entorno local (el archivo `.env` real no debe subirse al repositorio).
+
+```
+# Configuración de Base de Datos
+DATABASE_URL=postgresql://admin:admin_password@localhost:5432/edsia_db
+
+# Configuración MQTT (HiveMQ Cloud Serverless)
+MQTT_HOST=your_cluster_url.hivemq.cloud
+MQTT_PORT=8883
+MQTT_USERNAME=your_mqtt_username
+MQTT_PASSWORD=your_mqtt_password
+MQTT_TOPIC=solaris/cells/+/readings
+```
+
+(Nota: El comodín `+` en el topic te permitirá suscribirte a las lecturas de todas las celdas).
+
+**2. Actualización de `render.yaml`**
+
+Si tienes un archivo de configuración de infraestructura como código para Render (`render.yaml`), debes declarar allí estas nuevas variables. La clave aquí es usar `sync: false` en los valores sensibles para que Render te pida ingresarlos manualmente en su panel de control y no queden guardados en el repositorio público.
+
+Agrega esta sección bajo la configuración de tu servicio web:
+
+```yaml
+services:
+  - type: web
+    name: solaris-monitoring-api
+    env: python
+    # ... otras configuraciones existentes ...
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: solaris-monitoring-db
+          property: connectionString
+      # Nuevas variables MQTT
+      - key: MQTT_HOST
+        sync: false
+      - key: MQTT_PORT
+        value: 8883
+      - key: MQTT_USERNAME
+        sync: false
+      - key: MQTT_PASSWORD
+        sync: false
+      - key: MQTT_TOPIC
+        value: solaris/cells/+/readings
+```
+
+**Próximo Paso:**
+
+Con este documento cubres los criterios de aceptación relacionados con la configuración segura de variables de entorno MQTT. ¿Me confirmas cuando hayas integrado estos cambios para que pasemos al Paso 3 (Integración en FastAPI y Resiliencia)?
+
+**Qué se aceptó:** Configuración de variables MQTT en .env.example y render.yaml con `sync: false` para credenciales sensibles (Host, Username, Password). MQTT_PORT y MQTT_TOPIC tienen valores fijos en render.yaml.
+**Qué se denegó:** N/A.
+**Qué se modificó:** Se revisó el repositorio actual y se proporcionó configuración exacta adaptada a la estructura real de Solaris Monitoring.
+
+---
+
+# Lyla Alice - Prompt #37
+
+### IA Utilizada: Gemini
+
+**Prompt del integrante completo:**
+> Empezemos por el paso 1. Una vez terminado, vas a realizar el paso 2, y así hasta que acabemos todo
+
+**Respuesta de la IA completa:**
+
+¡Me parece un excelente plan! Vamos a avanzar de forma estructurada para asegurar que cada punto quede perfectamente integrado.
+
+**Comencemos con el Paso 1: La redacción del ADR-0002.**
+
+Como el equipo ya tiene experiencia previa redactando este tipo de documentos para el registro de decisiones, he estructurado este nuevo registro respetando el formato que han estado utilizando. Además, he incluido la justificación técnica exacta sobre Render y la experiencia exitosa previa que tuvimos conectando el ESP32 al broker de HiveMQ Cloud.
+
+Aquí tienes el contenido. Te sugiero guardarlo en la ruta `docs/adr/ADR-0002-mqtt-broker.md`:
+
+```markdown
+# ADR-0002: Ingesta de lecturas por MQTT como canal especializado para IoT
+
+## Estado
+Aceptado (Visto bueno de la coordinación - Cambio de alcance posterior a la Compuerta 1).
+
+## Contexto
+Para especializar nuestro producto IoT y aportar al sello de innovación, requerimos que los dispositivos con conexión intermitente y batería limitada publiquen sus lecturas mediante un protocolo ligero. Abrir una conexión HTTP completa en cada medición genera un consumo energético innecesario. 
+El reto de infraestructura radica en que nuestro actual proveedor (Render) no soporta el alojamiento de un broker MQTT propio, dado que sus Web Services únicamente exponen un puerto HTTP y no permiten la apertura de puertos TCP puros.
+
+## Decisión
+Se ha decidido implementar la ingesta de datos mediante el siguiente enfoque:
+* **Broker Gestionado:** Utilizaremos HiveMQ Cloud (Serverless) con seguridad TLS a través del puerto 8883, aprovechando que ya comprobamos su compatibilidad con las credenciales y la estructura JSON de nuestro firmware de ESP32.
+* **Patrón Arquitectónico (SOLID):** El cliente MQTT se implementará estrictamente como un nuevo adaptador de entrada.
+* **Reutilización de Lógica:** Este adaptador validará el payload utilizando los mismos esquemas actuales (`ReadingCreate`) e inyectará los datos mediante el mismo servicio subyacente (`ReadingService.create`).
+
+## Alternativas Descartadas
+* **Broker autoalojado en Render:** Se descartó completamente porque la plataforma no permite exponer los puertos TCP nativos (1883/8883) requeridos para establecer la conexión con los sensores.
+
+## Consecuencias
+* **Positivas:** Especialización del canal para hardware IoT, ahorro de batería en el ESP32, y protección absoluta del dominio (no se duplicará ninguna regla de negocio).
+* **Riesgos:** Añadimos una dependencia de infraestructura a un servicio de terceros (HiveMQ Cloud).
+```
+
+**Validación de Paso 1:**
+
+Con este documento cubres los criterios de aceptación relacionados con:
+- ✅ ADR-0002 explica por qué MQTT
+- ✅ Documenta qué broker (HiveMQ Cloud Serverless con TLS 8883)
+- ✅ Alternativas descartadas (Broker autoalojado en Render)
+- ✅ Visto bueno de la coordinación (cambio de alcance posterior a Compuerta 1)
+
+**¿Me confirmas cuando hayas integrado este documento en tu rama para que pasemos al Paso 2 (Configuración segura de variables de entorno en `render.yaml` y `.env.example`)?**
+
+**Qué se aceptó:** ADR-0002 correctamente estructurado con decisión clara sobre HiveMQ Cloud, justificación técnica de limitaciones de Render, y patrón SOLID de adaptador de entrada. Formato del ADR respeta estándar de decisiones arquitectónicas.
+**Qué se denegó:** N/A.
+**Qué se modificó:** Archivo ADR-0002-mqtt-broker.md completamente redactado y listo para copiar en docs/adr/.
+
+---
+
 # Lyla Alice - Prompt #36
 
 ### IA Utilizada: GitHub Copilot (Claude Haiku 4.5)
