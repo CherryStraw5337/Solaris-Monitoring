@@ -1,21 +1,26 @@
 from __future__ import annotations
 
-import json
+import logging
 import os
 import random
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any
 
 import paho.mqtt.client as mqtt
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from db import SessionLocal  # Importa tu sesión de base de datos
-from utils.models import Reading  # Importante para instanciar el objeto de lectura
-from utils.repositories.reading_repo import SqlAlchemyReadingRepository
+from utils.dependencies import get_reading_service
+from utils.domain.errors import DomainError
+from utils.schemas.reading import ReadingCreate
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_MQTT_PORT = 8883
-DEFAULT_MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage"
+DEFAULT_MQTT_TOPIC = "solaris/readings"
+KEEPALIVE_SECONDS = 60
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,87 +49,111 @@ class MqttConfig:
         )
 
 
-def on_connect(
-    client: Any, userdata: MqttConfig, flags: Any, reason_code: Any, properties: Any = None
-) -> None:
-    if reason_code == 0:
-        print("Conectado exitosamente al broker MQTT desde FastAPI")
-        client.subscribe(userdata.topic)
-    else:
-        print(f"Error de conexión MQTT, código: {reason_code}")
+class MqttStatus(StrEnum):
+    DISABLED = "disabled"
+    CONNECTING = "connecting"
+    CONNECTED = "connected"
+    DISCONNECTED = "disconnected"
 
 
-def on_message(client: Any, userdata: Any, msg: Any) -> None:
-    try:
-        # 1. Decodificar el JSON que manda el ESP32
-        payload_str = msg.payload.decode("utf-8")
-        data = json.loads(payload_str)
+class MqttListener:
+    """Adaptador de entrada MQTT: aplica las mismas reglas que POST /api/v1/readings."""
 
-        cell_id = data.get("cell_id")
-        voltage = data.get("voltage_measured")
+    def __init__(self, config: MqttConfig | None, session_factory: Callable[[], Session]) -> None:
+        self._config = config
+        self._session_factory = session_factory
+        self._client: Any = None
+        self.status = MqttStatus.DISABLED
 
-        # Respaldo automático de eficiencia si el ESP32 no la manda todavía
-        efficiency = data.get("efficiency_percentage")
-        if efficiency is None:
-            max_voltage = 3.3
-            efficiency = (
-                round((voltage / max_voltage) * 100, 2) if voltage <= max_voltage else 100.0
-            )
+    def start(self) -> None:
+        if self._config is None:
+            logger.info("MQTT deshabilitado: MQTT_HOST no está definido")
+            return
 
-        print(
-            f"Mensaje MQTT recibido -> Celda: {cell_id}, "
-            f"Voltaje: {voltage}V, Eficiencia: {efficiency}%"
-        )
-
-        # 2. Abrir una sesión de base de datos e insertar la lectura
-        db: Session = SessionLocal()
         try:
-            reading_repo = SqlAlchemyReadingRepository(db)
-
-            nueva_lectura = Reading(
-                cell_id=cell_id, voltage_measured=voltage, efficiency_percentage=efficiency
+            client = mqtt.Client(
+                client_id=f"FastAPI-Subscriber-{random.randint(0, 0xFFFF)}",
+                callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
             )
-            reading_repo.add(nueva_lectura)
+            client.username_pw_set(self._config.username, self._config.password)
+            client.tls_set()
+            client.on_connect = self.on_connect
+            client.on_disconnect = self.on_disconnect
+            client.on_message = self.on_message
+            # connect_async + loop_start no bloquean el arranque de la API y paho
+            # reintenta la conexión en su propio hilo si el broker no responde.
+            client.connect_async(self._config.host, self._config.port, KEEPALIVE_SECONDS)
+            client.loop_start()
+        except Exception:
+            logger.exception("No se pudo iniciar el cliente MQTT")
+            self.status = MqttStatus.DISCONNECTED
+            return
 
-            print("✓ Lectura guardada en la base de datos exitosamente")
-        except Exception as e:
-            db.rollback()
-            print(f"✗ Error al guardar en BD: {e}")
+        self._client = client
+        self.status = MqttStatus.CONNECTING
+        logger.info("Conectando al broker MQTT %s:%s", self._config.host, self._config.port)
+
+    def stop(self) -> None:
+        if self._client is None:
+            return
+        self._client.disconnect()
+        self._client.loop_stop()
+        self._client = None
+        self.status = MqttStatus.DISCONNECTED
+        logger.info("Cliente MQTT desconectado")
+
+    # Firmas de CallbackAPIVersion.VERSION2: paho pasa 5 argumentos a on_connect/on_disconnect.
+    def on_connect(
+        self, client: Any, userdata: Any, flags: Any, reason_code: Any, properties: Any
+    ) -> None:
+        if reason_code.is_failure:
+            self.status = MqttStatus.DISCONNECTED
+            logger.error("El broker MQTT rechazó la conexión: %s", reason_code)
+            return
+        assert self._config is not None
+        client.subscribe(self._config.topic, qos=1)
+        self.status = MqttStatus.CONNECTED
+        logger.info("Conectado al broker MQTT; suscrito a %s", self._config.topic)
+
+    def on_disconnect(
+        self, client: Any, userdata: Any, flags: Any, reason_code: Any, properties: Any
+    ) -> None:
+        self.status = MqttStatus.DISCONNECTED
+        level = logging.WARNING if reason_code.is_failure else logging.INFO
+        logger.log(level, "Desconectado del broker MQTT: %s", reason_code)
+
+    def on_message(self, client: Any, userdata: Any, msg: Any) -> None:
+        try:
+            payload = ReadingCreate.model_validate_json(msg.payload)
+        except ValidationError as exc:
+            logger.warning(
+                "Lectura MQTT descartada en %s: payload inválido (%s)",
+                msg.topic,
+                exc.errors(include_url=False, include_input=False),
+            )
+            return
+
+        try:
+            session = self._session_factory()
+        except Exception:
+            logger.exception("Lectura MQTT descartada: no se pudo abrir la base de datos")
+            return
+
+        # Cualquier excepción que escape de este callback detendría el hilo de red de paho.
+        try:
+            reading = get_reading_service(session).create(payload)
+        except DomainError as exc:
+            logger.warning("Lectura MQTT descartada: %s", exc)
+        except Exception:
+            session.rollback()
+            logger.exception("Error inesperado al guardar la lectura MQTT")
+        else:
+            logger.info(
+                "Lectura MQTT guardada: celda %s, %s V, %s %%, anomalía=%s",
+                reading.cell_id,
+                reading.voltage_measured,
+                reading.efficiency_percentage,
+                reading.is_anomaly,
+            )
         finally:
-            db.close()
-
-    except Exception as e:
-        print(f"Error procesando el mensaje MQTT: {e}")
-
-
-def iniciar_mqtt(env: Mapping[str, str] | None = None) -> Any:
-    config = MqttConfig.from_env(env)
-    if config is None:
-        # Sin broker configurado la API sigue funcionando: HTTP es el canal principal.
-        print("MQTT deshabilitado: MQTT_HOST no está definido")
-        return None
-
-    try:
-        # Generar un ID único para el cliente de Python para evitar bloqueos del broker
-        client_id = "FastAPI-Subscriber-" + str(random.randint(0, 0xFFFF))
-
-        client = mqtt.Client(
-            client_id=client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2
-        )
-        client.username_pw_set(config.username, config.password)
-
-        # Configurar TLS obligatorio para HiveMQ Cloud
-        client.tls_set()
-
-        client.user_data_set(config)
-        client.on_connect = on_connect
-        client.on_message = on_message
-
-        print(f"Intentando conectar al broker MQTT ({config.host}:{config.port})...")
-
-        client.connect(config.host, config.port, 60)
-        client.loop_start()
-        return client
-    except Exception as e:
-        print(f"✗ Error crítico al iniciar el cliente MQTT: {e}")
-        return None
+            session.close()

@@ -10,6 +10,7 @@ API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia,
 - PostgreSQL en Docker y SQLite para desarrollo y pruebas.
 - Arquitectura separada por routers, servicios, repositorios, esquemas y dominio.
 - Dashboard web en `/` con eficiencia, anomalías y resumen por celda, alimentado solo por endpoints `GET` públicos.
+- Ingesta opcional por MQTT (HiveMQ Cloud, TLS) con las mismas reglas que HTTP; estado visible en `/health` como `mqtt_status` ([ADR-0002](docs/adr/ADR-0002-mqtt-broker.md)).
 - CI/CD con Ruff, Mypy, Pytest, cobertura mínima del 90 %, migraciones y build Docker.
 - Endpoints protegidos para escritura (POST/PUT/DELETE) con validación de API key.
 - Endpoints públicos para lectura (GET) sin autenticación.
@@ -22,6 +23,7 @@ API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia,
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
+alembic upgrade head   # crea o actualiza el esquema; la app no crea tablas al arrancar
 uvicorn main:app --app-dir src --reload
 ```
 
@@ -49,6 +51,7 @@ src/
     ├── dependencies.py     # Inyección de dependencias (verify_api_key, etc.)
     ├── clock.py            # Utilidades de fecha y hora
     ├── exception_handlers.py # Manejadores de excepciones personalizados
+    ├── mqtt_listener.py    # Adaptador de entrada MQTT (usa ReadingService)
     ├── domain/             # Reglas de eficiencia y anomalías
     ├── models/             # Modelos SQLAlchemy
     ├── repositories/       # Capa de persistencia
@@ -69,7 +72,6 @@ docs/
 ├── ESP32_INTEGRATION.md    # Integración con dispositivos IoT ESP32
 ├── adr/                    # Architecture Decision Records
 └── ai_logs/                # Historiales de prompts y decisiones de IA
-    └── AI_LOG_Lyla.md      # Log de prompts de Lyla Alice (Issues #12, #14)
 ```
 
 ## Endpoints
@@ -132,11 +134,6 @@ El proyecto documenta el uso de IA en la carpeta [docs/ai_logs/](docs/ai_logs/).
 - **Prompt completo del integrante**
 - **Respuesta de la IA**
 - **Qué se aceptó / modificó / denegó**
-
-**Logs actuales:**
-- [AI_LOG_Lyla.md](docs/ai_logs/AI_LOG_Lyla.md): Historial de implementación de autenticación por API key (Issues #12, #14) - 36 prompts documentados
-
-Antes de abrir un Pull Request, registra los prompts de IA relevantes siguiendo el formato anterior.
 
 ## Licencia
 
