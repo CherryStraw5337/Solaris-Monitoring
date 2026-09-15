@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -31,7 +32,7 @@ def mqtt_settings_disabled() -> Settings:
 
 
 @pytest.fixture
-def mock_db_factory():
+def mock_db_factory() -> Mock:
     """Mock database session factory."""
     mock_session = MagicMock()
     return Mock(return_value=mock_session)
@@ -40,31 +41,41 @@ def mock_db_factory():
 class TestMQTTAdapter:
     """Test MQTT adapter initialization and status."""
 
-    def test_mqtt_adapter_enabled_with_host(self, mqtt_settings, mock_db_factory):
+    def test_mqtt_adapter_enabled_with_host(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """MQTT adapter is enabled when MQTT_HOST is configured."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         assert adapter.enabled is True
         assert adapter.status == "disabled"  # Initial status
 
-    def test_mqtt_adapter_disabled_without_host(self, mqtt_settings_disabled, mock_db_factory):
+    def test_mqtt_adapter_disabled_without_host(
+        self, mqtt_settings_disabled: Settings, mock_db_factory: Mock
+    ) -> None:
         """MQTT adapter is disabled when MQTT_HOST is not configured."""
         adapter = MQTTAdapter(mqtt_settings_disabled, mock_db_factory)
         assert adapter.enabled is False
         assert adapter.status == "disabled"
 
-    def test_extract_cell_id_from_valid_topic(self, mqtt_settings, mock_db_factory):
+    def test_extract_cell_id_from_valid_topic(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """Extract cell_id from valid topic format."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         cell_id = adapter._extract_cell_id_from_topic("solaris/cells/123/readings")
         assert cell_id == "123"
 
-    def test_extract_cell_id_from_invalid_topic(self, mqtt_settings, mock_db_factory):
+    def test_extract_cell_id_from_invalid_topic(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """Return None for invalid topic format."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         assert adapter._extract_cell_id_from_topic("invalid/topic") is None
         assert adapter._extract_cell_id_from_topic("solaris/invalid/123/readings") is None
 
-    def test_on_connect_success(self, mqtt_settings, mock_db_factory):
+    def test_on_connect_success(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """On connect callback sets status to connected and subscribes."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         mock_client = MagicMock()
@@ -74,7 +85,9 @@ class TestMQTTAdapter:
         assert adapter.status == "connected"
         mock_client.subscribe.assert_called_once_with(mqtt_settings.mqtt_topic, qos=1)
 
-    def test_on_connect_failure(self, mqtt_settings, mock_db_factory):
+    def test_on_connect_failure(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """On connect callback sets status to disconnected on failure."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         mock_client = MagicMock()
@@ -83,7 +96,9 @@ class TestMQTTAdapter:
         
         assert adapter.status == "disconnected"
 
-    def test_on_disconnect(self, mqtt_settings, mock_db_factory):
+    def test_on_disconnect(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """On disconnect callback sets status."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         mock_client = MagicMock()
@@ -95,9 +110,10 @@ class TestMQTTAdapter:
 class TestMQTTMessageHandling:
     """Test MQTT message validation and ingestion."""
 
-    def test_on_message_with_valid_payload(self, mqtt_settings, mock_db_factory):
+    def test_on_message_with_valid_payload(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """Valid JSON payload creates reading."""
-        mock_session = mock_db_factory()
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         
         with patch("utils.mqtt_adapter.ReadingService") as mock_service_class:
@@ -117,7 +133,9 @@ class TestMQTTMessageHandling:
             # Verify ReadingService.create was called
             mock_service.create.assert_called_once()
 
-    def test_on_message_with_invalid_json(self, mqtt_settings, mock_db_factory):
+    def test_on_message_with_invalid_json(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """Invalid JSON payload is logged and ignored."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         
@@ -129,7 +147,9 @@ class TestMQTTMessageHandling:
             adapter._on_message(MagicMock(), None, mock_msg)
             mock_logger.warning.assert_called()
 
-    def test_on_message_with_invalid_topic(self, mqtt_settings, mock_db_factory):
+    def test_on_message_with_invalid_topic(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """Invalid topic format is logged and ignored."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         
@@ -141,7 +161,9 @@ class TestMQTTMessageHandling:
             adapter._on_message(MagicMock(), None, mock_msg)
             mock_logger.warning.assert_called()
 
-    def test_on_message_with_missing_required_field(self, mqtt_settings, mock_db_factory):
+    def test_on_message_with_missing_required_field(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """Missing required field in payload is logged and ignored."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         
@@ -156,7 +178,9 @@ class TestMQTTMessageHandling:
             adapter._on_message(MagicMock(), None, mock_msg)
             mock_logger.warning.assert_called()
 
-    def test_get_status(self, mqtt_settings, mock_db_factory):
+    def test_get_status(
+        self, mqtt_settings: Settings, mock_db_factory: Mock
+    ) -> None:
         """Get current MQTT status."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         assert adapter.get_status() == "disabled"

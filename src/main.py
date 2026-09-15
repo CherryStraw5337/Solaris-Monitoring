@@ -1,16 +1,17 @@
-from pathlib import Path
-from contextlib import asynccontextmanager
 import threading
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from db import SessionLocal
 from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
 from utils.mqtt_adapter import MQTTAdapter
 from utils.routers import cells, health, readings
-from db import SessionLocal
 
 API_PREFIX = "/api/v1"
 PUBLIC_DIR = Path(__file__).resolve().parent / "public"
@@ -34,7 +35,7 @@ def get_mqtt_adapter() -> MQTTAdapter | None:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage FastAPI lifespan events: startup and shutdown.
     
     Starts MQTT adapter connection in a background thread on startup.
@@ -50,16 +51,16 @@ async def lifespan(app: FastAPI):
         # Run MQTT connection in background thread (non-blocking)
         mqtt_thread = threading.Thread(target=_mqtt_adapter.connect, daemon=True)
         mqtt_thread.start()
-        print(f"🟢 MQTT adapter started in background thread")
+        print("🟢 MQTT adapter started in background thread")
     else:
-        print(f"⚪ MQTT adapter disabled (MQTT_HOST not configured)")
+        print("⚪ MQTT adapter disabled (MQTT_HOST not configured)")
     
     yield
     
     # Shutdown
     if _mqtt_adapter:
         _mqtt_adapter.disconnect()
-        print(f"🔴 MQTT adapter disconnected")
+        print("🔴 MQTT adapter disconnected")
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
-from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import paho.mqtt.client as mqtt
 
@@ -14,7 +12,9 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 from utils.config import Settings
-from utils.models.reading import Reading
+from utils.dependencies import build_reading_analyzer
+from utils.repositories.cell_repo import SqlAlchemyCellRepository
+from utils.repositories.reading_repo import SqlAlchemyReadingRepository
 from utils.schemas.reading import ReadingCreate
 from utils.services.reading_service import ReadingService
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class MQTTAdapter:
     """MQTT client adapter for Solaris Monitoring IoT readings ingestion."""
 
-    def __init__(self, settings: Settings, db_session_factory: callable):
+    def __init__(self, settings: Settings, db_session_factory: Callable[[], Session]):
         """Initialize MQTT adapter with settings and database session factory.
 
         Args:
@@ -51,17 +51,22 @@ class MQTTAdapter:
             return parts[2]
         return None
 
-    def _on_connect(self, client: mqtt.Client, userdata: None, flags: dict, rc: int):
+    def _on_connect(
+        self, client: mqtt.Client, userdata: None, flags: dict, rc: int
+    ) -> None:
         """Callback for MQTT connection events."""
         if rc == 0:
-            logger.info("MQTT connected successfully. Subscribing to topic %s", self.settings.mqtt_topic)
+            logger.info(
+                "MQTT connected successfully. Subscribing to topic %s",
+                self.settings.mqtt_topic,
+            )
             self.status = "connected"
             client.subscribe(self.settings.mqtt_topic, qos=1)
         else:
             logger.error("MQTT connection failed with code %d", rc)
             self.status = "disconnected"
 
-    def _on_disconnect(self, client: mqtt.Client, userdata: None, rc: int):
+    def _on_disconnect(self, client: mqtt.Client, userdata: None, rc: int) -> None:
         """Callback for MQTT disconnection events."""
         if rc == 0:
             logger.info("MQTT disconnected cleanly")
@@ -69,7 +74,9 @@ class MQTTAdapter:
             logger.warning("MQTT disconnected with code %d", rc)
         self.status = "disconnected"
 
-    def _on_message(self, client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage):
+    def _on_message(
+        self, client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage
+    ) -> None:
         """Callback for MQTT message reception. Validates and ingests readings.
 
         Args:
@@ -83,7 +90,10 @@ class MQTTAdapter:
         # Extract cell_id from topic
         cell_id_str = self._extract_cell_id_from_topic(topic)
         if not cell_id_str:
-            logger.warning("Invalid topic format: %s. Expected solaris/cells/{cell_id}/readings", topic)
+            logger.warning(
+                "Invalid topic format: %s. Expected solaris/cells/{cell_id}/readings",
+                topic,
+            )
             return
 
         # Parse JSON payload
@@ -102,23 +112,35 @@ class MQTTAdapter:
 
         # Ingest reading into database
         try:
-            db: Session = self.db_session_factory()
-            service = ReadingService(db)
+            db = self.db_session_factory()
+            reading_repo = SqlAlchemyReadingRepository(db)
+            cell_repo = SqlAlchemyCellRepository(db)
+            analyzer = build_reading_analyzer()
+            service = ReadingService(readings=reading_repo, cells=cell_repo, analyzer=analyzer)
             service.create(reading_data)
-            logger.info("Reading ingested from MQTT topic %s for cell_id %s", topic, cell_id_str)
+            logger.info(
+                "Reading ingested from MQTT topic %s for cell_id %s", topic, cell_id_str
+            )
         except Exception as e:
             logger.error("Error ingesting reading from MQTT topic %s: %s", topic, e)
         finally:
             db.close()
 
-    def connect(self):
+    def connect(self) -> None:
         """Connect to MQTT broker (blocking, runs in thread or executor)."""
         if not self.enabled:
             logger.info("MQTT adapter disabled (MQTT_HOST not configured)")
             self.status = "disabled"
             return
 
-        logger.info("Connecting to MQTT broker %s:%d", self.settings.mqtt_host, self.settings.mqtt_port)
+        # Type narrowing: if enabled is True, mqtt_host must be set
+        assert self.settings.mqtt_host is not None, "mqtt_host must be set if adapter is enabled"
+
+        logger.info(
+            "Connecting to MQTT broker %s:%d",
+            self.settings.mqtt_host,
+            self.settings.mqtt_port,
+        )
         self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
@@ -126,14 +148,18 @@ class MQTTAdapter:
 
         # Set username and password if provided
         if self.settings.mqtt_username and self.settings.mqtt_password:
-            self.client.username_pw_set(self.settings.mqtt_username, self.settings.mqtt_password)
+            self.client.username_pw_set(
+                self.settings.mqtt_username, self.settings.mqtt_password
+            )
 
         # Enable TLS for secure connection to HiveMQ Cloud
         self.client.tls_set()
-        self.client.tls_insecure = False
+        self.client._tls_insecure = False
 
         try:
-            self.client.connect(self.settings.mqtt_host, self.settings.mqtt_port, keepalive=60)
+            self.client.connect(
+                self.settings.mqtt_host, self.settings.mqtt_port, keepalive=60
+            )
             self.status = "connecting"
             # Start the network loop (blocking until disconnect)
             self.client.loop_forever()
@@ -141,7 +167,7 @@ class MQTTAdapter:
             logger.error("Failed to connect to MQTT broker: %s", e)
             self.status = "disconnected"
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         """Disconnect from MQTT broker."""
         if self.client:
             logger.info("Disconnecting from MQTT broker")
