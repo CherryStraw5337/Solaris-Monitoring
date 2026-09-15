@@ -30,6 +30,81 @@ body {
     50% { opacity: 0.7; }
 }
 
+/* ---------- Vista móvil ---------- */
+
+body {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.active-touch {
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.active-touch:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+}
+
+.mobile-nav-btn {
+    position: relative;
+    flex: 1 1 0%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 48px;
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.mobile-nav-btn[aria-current="page"] {
+    color: #fbbf24;
+}
+
+.mobile-nav-badge {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    margin-left: 6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 9999px;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+}
+
+/* Respeta el notch y la barra de gestos en iPhone y Android (viewport-fit=cover). */
+.mobile-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Tailwind (CDN) inyecta sus utilidades después de este archivo: sin !important,
+   h-14, pb-24 y p-5 anularían el espacio extra de la zona segura. */
+@media (max-width: 767px) {
+    .mobile-safe-top {
+        padding-top: env(safe-area-inset-top) !important;
+        height: calc(3.5rem + env(safe-area-inset-top)) !important;
+    }
+
+    .mobile-sheet-pad {
+        padding-bottom: calc(1.25rem + env(safe-area-inset-bottom)) !important;
+    }
+
+    .mobile-scroll {
+        padding-bottom: calc(6rem + env(safe-area-inset-bottom)) !important;
+        scrollbar-width: none;
+    }
+
+    .mobile-scroll::-webkit-scrollbar {
+        display: none;
+    }
+}
+
 .project-hero {
     background-image:
         linear-gradient(rgba(2, 6, 23, 0.35), rgba(2, 6, 23, 0.9)),

@@ -2,7 +2,8 @@
 <html lang="es" class="h-full bg-slate-950 text-slate-100">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
     <title>Solaris Monitoring - Dashboard de Eficiencia Fotovoltaica</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
@@ -15,11 +16,8 @@
 
 <div class="flex h-screen overflow-hidden">
 
-    <!-- Fondo oscuro del menú en móvil -->
-    <div id="sidebar-backdrop" class="fixed inset-0 z-30 bg-slate-950/70 hidden md:hidden" onclick="toggleSidebar(false)"></div>
-
-    <!-- Barra lateral -->
-    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between -translate-x-full md:translate-x-0 transition-transform duration-300 flex-shrink-0">
+    <!-- Barra lateral (escritorio). En móvil la reemplaza la barra inferior. -->
+    <aside id="sidebar" class="hidden md:flex w-64 bg-slate-900 border-r border-slate-800 flex-col justify-between flex-shrink-0">
         <div>
             <div class="p-5 flex items-center gap-3 border-b border-slate-800">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-slate-950 text-xl shadow-lg shadow-amber-500/20">
@@ -73,38 +71,51 @@
     <!-- Contenido principal -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-950">
 
-        <header class="min-h-16 bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 md:px-6 py-3 flex flex-wrap items-center justify-between gap-3 z-20">
-            <div class="flex items-center gap-3 min-w-0">
-                <button class="md:hidden p-2 text-slate-300 hover:text-amber-400" onclick="toggleSidebar(true)" aria-label="Abrir menú">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-                <h2 id="page-title" class="text-base md:text-lg font-bold text-white tracking-wide truncate">Vista general del sistema</h2>
+        <header class="mobile-safe-top h-14 md:h-auto md:min-h-16 bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 md:px-6 md:py-3 flex items-center justify-between gap-3 z-20 flex-shrink-0">
+            <!-- Marca y estado (móvil) -->
+            <div class="flex md:hidden items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-slate-950 text-sm shadow-md shadow-amber-500/20 flex-shrink-0">
+                    <i class="fa-solid fa-solar-panel"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="font-bold text-sm text-white tracking-tight truncate">Solaris <span class="text-amber-400">Monitoring</span></p>
+                    <p class="text-[10px] text-slate-400 flex items-center gap-1">
+                        <span id="mobile-status-dot" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span id="mobile-status-text">Conectando…</span>
+                    </p>
+                </div>
             </div>
 
-            <div class="flex items-center gap-2 md:gap-3">
+            <h2 id="page-title" class="hidden md:block text-lg font-bold text-white tracking-wide truncate">Vista general del sistema</h2>
+
+            <div class="flex items-center gap-1.5 md:gap-3 flex-shrink-0">
                 <label class="sr-only" for="period-select">Período de análisis</label>
-                <select id="period-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500">
+                <select id="period-select" class="period-select hidden md:block bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500">
                     <option value="1">Últimas 24 h</option>
                     <option value="7" selected>Últimos 7 días</option>
                     <option value="30">Últimos 30 días</option>
                 </select>
 
-                <button id="toggle-stream-btn" onclick="toggleStreaming()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all">
+                <button id="toggle-stream-btn" onclick="toggleStreaming()" class="active-touch flex items-center justify-center gap-2 w-9 h-9 md:w-auto md:h-auto md:px-3 md:py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all" aria-label="Pausar o reanudar actualización">
                     <i id="stream-btn-icon" class="fa-solid fa-pause"></i>
-                    <span id="stream-btn-text">En vivo</span>
+                    <span id="stream-btn-text" class="hidden md:inline">En vivo</span>
                 </button>
 
-                <button onclick="refresh(true)" class="p-2 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg transition-all" title="Actualizar datos" aria-label="Actualizar datos">
+                <button onclick="refresh(true)" class="active-touch flex items-center justify-center w-9 h-9 md:w-auto md:h-auto md:p-2 text-slate-400 hover:text-amber-400 bg-slate-800 md:bg-transparent border border-slate-700 md:border-0 hover:bg-slate-800 rounded-lg transition-all" title="Actualizar datos" aria-label="Actualizar datos">
                     <i id="refresh-icon" class="fa-solid fa-rotate"></i>
                 </button>
 
-                <button onclick="exportReadingsCsv()" class="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-all" title="Exportar lecturas a CSV" aria-label="Exportar lecturas a CSV">
+                <button onclick="exportReadingsCsv()" class="hidden md:inline-flex p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-all" title="Exportar lecturas a CSV" aria-label="Exportar lecturas a CSV">
                     <i class="fa-solid fa-download"></i>
+                </button>
+
+                <button onclick="openMobileSheet()" class="md:hidden active-touch flex items-center justify-center w-9 h-9 text-slate-300 bg-slate-800 border border-slate-700 rounded-lg" aria-label="Más opciones">
+                    <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+        <main class="mobile-scroll flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6 space-y-4 md:space-y-6">
 
             <!-- Aviso de error de conexión -->
             <div id="error-banner" class="hidden bg-red-500/10 border border-red-500/30 text-red-300 text-sm rounded-xl px-4 py-3 flex items-start gap-3">
@@ -118,64 +129,64 @@
             <!-- ============ VISTA GENERAL ============ -->
             <section id="tab-overview" class="tab-content space-y-6">
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                <div class="grid grid-cols-2 xl:grid-cols-5 gap-2.5 md:gap-4">
+                    <div class="bg-slate-900/90 rounded-2xl p-3 md:p-4 border border-slate-800/80 shadow-lg">
                         <div class="flex items-center justify-between text-slate-400 mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider">Celdas activas</span>
-                            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-sm"><i class="fa-solid fa-solar-panel"></i></div>
+                            <span class="text-[10px] md:text-xs font-semibold uppercase tracking-wider">Celdas activas</span>
+                            <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-sm"><i class="fa-solid fa-solar-panel"></i></div>
                         </div>
                         <div class="flex items-baseline gap-2">
-                            <span id="kpi-active-cells" class="text-2xl font-bold text-white tracking-tight">—</span>
+                            <span id="kpi-active-cells" class="text-xl md:text-2xl font-bold text-white tracking-tight">—</span>
                             <span id="kpi-total-cells" class="text-xs font-medium text-slate-400"></span>
                         </div>
-                        <p id="kpi-active-cells-note" class="mt-2 text-xs text-slate-400">&nbsp;</p>
+                        <p id="kpi-active-cells-note" class="mt-1.5 md:mt-2 text-[10px] md:text-xs text-slate-400">&nbsp;</p>
                     </div>
 
-                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                    <div class="bg-slate-900/90 rounded-2xl p-3 md:p-4 border border-slate-800/80 shadow-lg">
                         <div class="flex items-center justify-between text-slate-400 mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider">Eficiencia promedio</span>
-                            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm"><i class="fa-solid fa-gauge-high"></i></div>
+                            <span class="text-[10px] md:text-xs font-semibold uppercase tracking-wider">Eficiencia promedio</span>
+                            <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm"><i class="fa-solid fa-gauge-high"></i></div>
                         </div>
                         <div class="flex items-baseline gap-2">
-                            <span id="kpi-avg-efficiency" class="text-2xl font-bold text-emerald-400 tracking-tight">—</span>
+                            <span id="kpi-avg-efficiency" class="text-xl md:text-2xl font-bold text-emerald-400 tracking-tight">—</span>
                             <span class="text-xs font-medium text-slate-400">%</span>
                         </div>
-                        <p class="mt-2 text-xs text-slate-400">Ponderada por lecturas</p>
+                        <p class="mt-1.5 md:mt-2 text-[10px] md:text-xs text-slate-400">Ponderada por lecturas</p>
                     </div>
 
-                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                    <div class="bg-slate-900/90 rounded-2xl p-3 md:p-4 border border-slate-800/80 shadow-lg">
                         <div class="flex items-center justify-between text-slate-400 mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider">Lecturas</span>
-                            <div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-sm"><i class="fa-solid fa-wave-square"></i></div>
+                            <span class="text-[10px] md:text-xs font-semibold uppercase tracking-wider">Lecturas</span>
+                            <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-sm"><i class="fa-solid fa-wave-square"></i></div>
                         </div>
                         <div class="flex items-baseline gap-2">
-                            <span id="kpi-reading-count" class="text-2xl font-bold text-white tracking-tight">—</span>
+                            <span id="kpi-reading-count" class="text-xl md:text-2xl font-bold text-white tracking-tight">—</span>
                         </div>
-                        <p class="mt-2 text-xs text-slate-400 period-label">Últimos 7 días</p>
+                        <p class="mt-1.5 md:mt-2 text-[10px] md:text-xs text-slate-400 period-label">Últimos 7 días</p>
                     </div>
 
-                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                    <div class="bg-slate-900/90 rounded-2xl p-3 md:p-4 border border-slate-800/80 shadow-lg">
                         <div class="flex items-center justify-between text-slate-400 mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider">Anomalías</span>
-                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <span class="text-[10px] md:text-xs font-semibold uppercase tracking-wider">Anomalías</span>
+                            <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm"><i class="fa-solid fa-triangle-exclamation"></i></div>
                         </div>
                         <div class="flex items-baseline gap-2">
-                            <span id="kpi-anomaly-count" class="text-2xl font-bold text-white tracking-tight">—</span>
+                            <span id="kpi-anomaly-count" class="text-xl md:text-2xl font-bold text-white tracking-tight">—</span>
                             <span id="kpi-anomaly-rate" class="text-xs font-medium text-slate-400"></span>
                         </div>
-                        <p class="mt-2 text-xs text-slate-400 period-label">Últimos 7 días</p>
+                        <p class="mt-1.5 md:mt-2 text-[10px] md:text-xs text-slate-400 period-label">Últimos 7 días</p>
                     </div>
 
-                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80 shadow-lg">
+                    <div class="col-span-2 xl:col-span-1 bg-slate-900/90 rounded-2xl p-3 md:p-4 border border-slate-800/80 shadow-lg">
                         <div class="flex items-center justify-between text-slate-400 mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider">Última lectura</span>
-                            <div class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center text-sm"><i class="fa-solid fa-bolt"></i></div>
+                            <span class="text-[10px] md:text-xs font-semibold uppercase tracking-wider">Última lectura</span>
+                            <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center text-sm"><i class="fa-solid fa-bolt"></i></div>
                         </div>
                         <div class="flex items-baseline gap-2">
-                            <span id="kpi-last-voltage" class="text-2xl font-bold text-white tracking-tight">—</span>
+                            <span id="kpi-last-voltage" class="text-xl md:text-2xl font-bold text-white tracking-tight">—</span>
                             <span class="text-xs font-medium text-slate-400">V</span>
                         </div>
-                        <p id="kpi-last-reading-note" class="mt-2 text-xs text-slate-400 truncate">&nbsp;</p>
+                        <p id="kpi-last-reading-note" class="mt-1.5 md:mt-2 text-[10px] md:text-xs text-slate-400 truncate">&nbsp;</p>
                     </div>
                 </div>
 
@@ -185,54 +196,54 @@
                     <p class="text-xs text-slate-400 mt-1">Registra una celda con <code class="text-amber-400">POST /api/v1/cells</code> desde <a href="/docs" class="text-amber-400 underline">/docs</a>. Las escrituras requieren la API key del dispositivo.</p>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-4 md:p-5 border border-slate-800/80 shadow-xl flex flex-col">
                         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                             <div>
-                                <h3 class="font-bold text-white text-base">Voltaje y eficiencia por lectura</h3>
+                                <h3 class="font-bold text-white text-sm md:text-base">Voltaje y eficiencia por lectura</h3>
                                 <p class="text-xs text-slate-400">Últimas 100 lecturas de la celda seleccionada · puntos rojos = anomalía</p>
                             </div>
                             <label class="sr-only" for="cell-select">Celda</label>
-                            <select id="cell-select" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500 max-w-[12rem]"></select>
+                            <select id="cell-select" class="w-full sm:w-auto bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500 sm:max-w-[12rem]"></select>
                         </div>
                         <div class="flex flex-wrap items-center gap-4 mb-2 text-xs font-medium">
                             <span class="flex items-center gap-1.5 text-amber-400"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Voltaje (V)</span>
                             <span class="flex items-center gap-1.5 text-cyan-400"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Eficiencia (%)</span>
                             <span class="flex items-center gap-1.5 text-slate-400"><span class="w-4 border-t-2 border-dashed border-slate-400"></span> Umbral de eficiencia</span>
                         </div>
-                        <div class="flex-1 min-h-[280px] relative">
+                        <div class="flex-1 min-h-[190px] md:min-h-[280px] relative">
                             <canvas id="timelineChart" aria-label="Gráfica de voltaje y eficiencia"></canvas>
                             <p id="timeline-empty" class="hidden absolute inset-0 flex items-center justify-center text-sm text-slate-500">Sin lecturas para esta celda</p>
                         </div>
                     </div>
 
-                    <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col">
+                    <div class="bg-slate-900/90 rounded-2xl p-4 md:p-5 border border-slate-800/80 shadow-xl flex flex-col">
                         <div class="mb-4">
-                            <h3 class="font-bold text-white text-base">Eficiencia promedio por celda</h3>
+                            <h3 class="font-bold text-white text-sm md:text-base">Eficiencia promedio por celda</h3>
                             <p class="text-xs text-slate-400"><span class="period-label">Últimos 7 días</span> · ámbar = por debajo de su umbral</p>
                         </div>
-                        <div class="flex-1 min-h-[280px] relative">
+                        <div class="flex-1 min-h-[190px] md:min-h-[280px] relative">
                             <canvas id="efficiencyBarChart" aria-label="Gráfica de eficiencia por celda"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-4 md:p-5 border border-slate-800/80 shadow-xl">
                         <div class="flex items-center justify-between mb-4">
                             <div>
-                                <h3 class="font-bold text-white text-base">Estado de las celdas</h3>
+                                <h3 class="font-bold text-white text-sm md:text-base">Estado de las celdas</h3>
                                 <p class="text-xs text-slate-400">Resumen del período por celda</p>
                             </div>
                             <button onclick="switchTab('cells')" class="text-xs text-amber-400 hover:text-amber-300 font-medium">
                                 Ver todas <i class="fa-solid fa-arrow-right ml-1"></i>
                             </button>
                         </div>
-                        <div id="cell-status-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                        <div id="cell-status-list" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-4"></div>
                     </div>
 
-                    <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl flex flex-col">
-                        <h3 class="font-bold text-white text-base mb-1">Últimas anomalías</h3>
+                    <div class="bg-slate-900/90 rounded-2xl p-4 md:p-5 border border-slate-800/80 shadow-xl flex flex-col">
+                        <h3 class="font-bold text-white text-sm md:text-base mb-1">Últimas anomalías</h3>
                         <p class="text-xs text-slate-400 mb-4">Lecturas marcadas por la API</p>
                         <div id="quick-events-list" class="space-y-3 flex-1 overflow-y-auto max-h-[220px] pr-1"></div>
                     </div>
@@ -241,50 +252,51 @@
 
             <!-- ============ CELDAS ============ -->
             <section id="tab-cells" class="tab-content hidden space-y-6">
-                <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="bg-slate-900/90 rounded-2xl p-4 md:p-6 border border-slate-800/80 shadow-xl">
+                    <div class="flex flex-wrap items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
                         <div>
-                            <h3 class="font-bold text-white text-lg">Celdas fotovoltaicas</h3>
+                            <h3 class="font-bold text-white text-base md:text-lg">Celdas fotovoltaicas</h3>
                             <p class="text-xs text-slate-400">Selecciona una celda para ver su configuración, resumen y lecturas recientes</p>
                         </div>
-                        <div class="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px] md:text-xs text-slate-300">
                             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500"></span> Óptima</span>
                             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500/20 border border-amber-500"></span> Con anomalías</span>
                             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-500/20 border border-red-500"></span> Última lectura anómala</span>
                             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-500/20 border border-slate-500"></span> Sin datos / inactiva</span>
                         </div>
                     </div>
-                    <div id="cell-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+                    <div id="cell-grid" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3"></div>
                 </div>
             </section>
 
             <!-- ============ ANÁLISIS ============ -->
             <section id="tab-analytics" class="tab-content hidden space-y-6">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-4 md:p-5 border border-slate-800/80 shadow-xl">
                         <div class="mb-4">
-                            <h3 class="font-bold text-white text-base">Voltaje mínimo, promedio y máximo</h3>
+                            <h3 class="font-bold text-white text-sm md:text-base">Voltaje mínimo, promedio y máximo</h3>
                             <p class="text-xs text-slate-400"><span class="period-label">Últimos 7 días</span> · comparado con el voltaje nominal de cada celda</p>
                         </div>
-                        <div class="h-[300px] relative"><canvas id="voltageRangeChart" aria-label="Gráfica de rangos de voltaje"></canvas></div>
+                        <div class="h-56 md:h-[300px] relative"><canvas id="voltageRangeChart" aria-label="Gráfica de rangos de voltaje"></canvas></div>
                     </div>
 
-                    <div class="bg-slate-900/90 rounded-2xl p-5 border border-slate-800/80 shadow-xl">
+                    <div class="bg-slate-900/90 rounded-2xl p-4 md:p-5 border border-slate-800/80 shadow-xl">
                         <div class="mb-4">
-                            <h3 class="font-bold text-white text-base">Causas de anomalía</h3>
+                            <h3 class="font-bold text-white text-sm md:text-base">Causas de anomalía</h3>
                             <p class="text-xs text-slate-400">Sobre las últimas lecturas cargadas</p>
                         </div>
-                        <div class="h-[300px] relative">
+                        <div class="h-56 md:h-[300px] relative">
                             <canvas id="anomalyCauseChart" aria-label="Gráfica de causas de anomalía"></canvas>
                             <p id="anomaly-cause-empty" class="hidden absolute inset-0 flex items-center justify-center text-sm text-slate-500">Sin anomalías registradas</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl">
-                    <h3 class="font-bold text-white text-base mb-1">Resumen por celda</h3>
+                <div class="bg-slate-900/90 rounded-2xl p-4 md:p-6 border border-slate-800/80 shadow-xl">
+                    <h3 class="font-bold text-white text-sm md:text-base mb-1">Resumen por celda</h3>
                     <p class="text-xs text-slate-400 mb-4">Datos de <code class="text-amber-400">GET /api/v1/readings/cell/{id}/summary</code> · <span class="period-label">Últimos 7 días</span></p>
-                    <div class="overflow-x-auto">
+                    <div id="summary-cards" class="md:hidden space-y-2"></div>
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead>
                                 <tr class="border-b border-slate-800 text-slate-400 uppercase font-semibold">
@@ -307,19 +319,20 @@
 
             <!-- ============ ANOMALÍAS ============ -->
             <section id="tab-alerts" class="tab-content hidden space-y-6">
-                <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="bg-slate-900/90 rounded-2xl p-4 md:p-6 border border-slate-800/80 shadow-xl">
+                    <div class="flex flex-wrap items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
                         <div>
-                            <h3 class="font-bold text-white text-lg">Lecturas anómalas</h3>
+                            <h3 class="font-bold text-white text-base md:text-lg">Lecturas anómalas</h3>
                             <p class="text-xs text-slate-400">La causa se estima con la configuración actual de cada celda</p>
                         </div>
-                        <div class="flex items-center bg-slate-800 p-1 rounded-lg border border-slate-700 text-xs" role="group" aria-label="Filtrar anomalías">
+                        <div class="flex w-full md:w-auto items-center bg-slate-800 p-1 rounded-lg border border-slate-700 text-xs" role="group" aria-label="Filtrar anomalías">
                             <button data-alert-filter="all" class="alert-filter px-2.5 py-1 rounded font-medium">Todas</button>
                             <button data-alert-filter="overvoltage" class="alert-filter px-2.5 py-1 rounded font-medium">Sobrevoltaje</button>
                             <button data-alert-filter="low_efficiency" class="alert-filter px-2.5 py-1 rounded font-medium">Baja eficiencia</button>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div id="alerts-feed" class="md:hidden space-y-2"></div>
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead>
                                 <tr class="border-b border-slate-800 text-slate-400 uppercase font-semibold">
@@ -339,34 +352,34 @@
 
             <!-- ============ ESTADO DEL SERVICIO ============ -->
             <section id="tab-service" class="tab-content hidden space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80">
+                <div class="grid grid-cols-2 xl:grid-cols-4 gap-2.5 md:gap-4">
+                    <div class="bg-slate-900/90 rounded-2xl p-3 md:p-4 border border-slate-800/80 min-w-0">
                         <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Estado</span>
-                        <p id="service-status" class="text-xl font-bold text-white mt-1">—</p>
+                        <p id="service-status" class="text-base md:text-xl font-bold text-white mt-1">—</p>
                     </div>
-                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80">
+                    <div class="bg-slate-900/90 rounded-2xl p-3 md:p-4 border border-slate-800/80 min-w-0">
                         <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Commit desplegado</span>
-                        <p id="service-commit" class="text-xl font-bold text-white mt-1 font-mono truncate">—</p>
+                        <p id="service-commit" class="text-base md:text-xl font-bold text-white mt-1 font-mono truncate">—</p>
                     </div>
-                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80">
+                    <div class="bg-slate-900/90 rounded-2xl p-3 md:p-4 border border-slate-800/80 min-w-0">
                         <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Rama</span>
-                        <p id="service-branch" class="text-xl font-bold text-white mt-1 font-mono truncate">—</p>
+                        <p id="service-branch" class="text-base md:text-xl font-bold text-white mt-1 font-mono truncate">—</p>
                     </div>
-                    <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800/80">
+                    <div class="bg-slate-900/90 rounded-2xl p-3 md:p-4 border border-slate-800/80 min-w-0">
                         <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Fecha de actualización</span>
-                        <p id="service-update-date" class="text-xl font-bold text-white mt-1">—</p>
+                        <p id="service-update-date" class="text-base md:text-xl font-bold text-white mt-1">—</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl space-y-5">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                    <div class="lg:col-span-2 bg-slate-900/90 rounded-2xl p-4 md:p-6 border border-slate-800/80 shadow-xl space-y-5">
                         <div>
-                            <h3 class="font-bold text-white text-lg">Respuesta de <code class="text-amber-400">/health</code></h3>
+                            <h3 class="font-bold text-white text-base md:text-lg">Respuesta de <code class="text-amber-400">/health</code></h3>
                             <p id="service-message" class="text-xs text-slate-400"></p>
                         </div>
                         <pre id="json-debugger" class="p-4 bg-slate-950 rounded-xl border border-slate-800/80 text-[11px] font-mono text-emerald-400 overflow-x-auto max-h-64">Cargando…</pre>
 
-                        <div class="pt-4 border-t border-slate-800 flex flex-wrap items-end gap-4">
+                        <div class="pt-4 border-t border-slate-800 flex flex-wrap items-end gap-3 md:gap-4">
                             <div>
                                 <label for="polling-select" class="block text-xs font-semibold text-slate-300 mb-1">Frecuencia de actualización</label>
                                 <select id="polling-select" class="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-amber-500">
@@ -384,8 +397,8 @@
                         </div>
                     </div>
 
-                    <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl space-y-4">
-                        <h3 class="font-bold text-white text-base">Endpoints</h3>
+                    <div class="bg-slate-900/90 rounded-2xl p-4 md:p-6 border border-slate-800/80 shadow-xl space-y-4">
+                        <h3 class="font-bold text-white text-sm md:text-base">Endpoints</h3>
                         <p class="text-xs text-slate-400">Este dashboard solo consulta endpoints públicos de lectura. Las escrituras requieren la API key del dispositivo y no se hacen desde el navegador.</p>
                         <ul class="space-y-2 text-[11px] font-mono">
                             <li class="flex gap-2"><span class="text-emerald-400 w-12 shrink-0">GET</span><span class="text-slate-300 break-all">/health</span></li>
@@ -402,27 +415,27 @@
 
             <!-- ============ PROYECTO Y EQUIPO ============ -->
             <section id="tab-project" class="tab-content hidden space-y-6">
-                <div class="project-hero rounded-2xl border border-slate-800 min-h-[320px] flex flex-col items-center justify-center text-center p-8">
-                    <h3 class="text-3xl md:text-4xl font-bold text-white tracking-tight">☀️ Monitoreo Solar</h3>
+                <div class="project-hero rounded-2xl border border-slate-800 min-h-[260px] md:min-h-[320px] flex flex-col items-center justify-center text-center p-6 md:p-8">
+                    <h3 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">☀️ Monitoreo Solar</h3>
                     <p class="text-amber-300 mt-2 text-lg">Mantenimiento predictivo</p>
-                    <div class="mt-8 flex flex-wrap justify-center gap-6">
+                    <div class="mt-6 md:mt-8 flex flex-wrap justify-center gap-4 md:gap-6">
                         <a href="https://github.com/JoseB1342" target="_blank" rel="noopener" class="group flex flex-col items-center gap-2">
-                            <img src="https://github.com/JoseB1342.png" alt="JoseB1342" class="w-20 h-20 rounded-full border-2 border-amber-400/70 group-hover:scale-105 transition-transform">
+                            <img src="https://github.com/JoseB1342.png" alt="JoseB1342" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-amber-400/70 group-hover:scale-105 transition-transform">
                             <span class="text-sm text-slate-200">JoseB1342</span>
                         </a>
                         <a href="https://github.com/lylaxtraw" target="_blank" rel="noopener" class="group flex flex-col items-center gap-2">
-                            <img src="https://github.com/lylaxtraw.png" alt="lylaxtraw" class="w-20 h-20 rounded-full border-2 border-amber-400/70 group-hover:scale-105 transition-transform">
+                            <img src="https://github.com/lylaxtraw.png" alt="lylaxtraw" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-amber-400/70 group-hover:scale-105 transition-transform">
                             <span class="text-sm text-slate-200">lylaxtraw</span>
                         </a>
                         <a href="https://github.com/martincb858" target="_blank" rel="noopener" class="group flex flex-col items-center gap-2">
-                            <img src="https://github.com/martincb858.png" alt="martincb858" class="w-20 h-20 rounded-full border-2 border-amber-400/70 group-hover:scale-105 transition-transform">
+                            <img src="https://github.com/martincb858.png" alt="martincb858" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-amber-400/70 group-hover:scale-105 transition-transform">
                             <span class="text-sm text-slate-200">martincb858</span>
                         </a>
                     </div>
                 </div>
 
-                <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800/80 shadow-xl">
-                    <h3 class="font-bold text-white text-lg flex items-center gap-2"><i class="fa-solid fa-microchip text-amber-400"></i> ¿Por qué este proyecto?</h3>
+                <div class="bg-slate-900/90 rounded-2xl p-4 md:p-6 border border-slate-800/80 shadow-xl">
+                    <h3 class="font-bold text-white text-base md:text-lg flex items-center gap-2"><i class="fa-solid fa-microchip text-amber-400"></i> ¿Por qué este proyecto?</h3>
                     <p class="text-sm text-slate-300 mt-3 leading-relaxed">
                         Decidimos desarrollar este proyecto porque en la actualidad se están optando por las fuentes de energía renovables pero estas aún no se están aprovechando del todo. Por eso trabajamos en hacer este proyecto: para sacar el máximo provecho de nuestros paneles solares y así poder tener un mejor rendimiento de estos.
                     </p>
@@ -435,10 +448,79 @@
     </div>
 </div>
 
-<!-- Detalle de celda -->
-<div id="cell-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4" onclick="if (event.target === this) closeCellModal()">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-cell-title">
-        <button onclick="closeCellModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg" aria-label="Cerrar">
+<!-- Barra de navegación inferior (móvil) -->
+<nav id="mobile-nav" class="mobile-safe-bottom md:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-900/95 backdrop-blur border-t border-slate-800/80" aria-label="Secciones del dashboard">
+    <div class="h-16 px-2 flex items-center justify-around">
+        <button data-tab="overview" class="mobile-nav-btn active-touch">
+            <i class="fa-solid fa-chart-pie text-base"></i><span>Inicio</span>
+        </button>
+        <button data-tab="cells" class="mobile-nav-btn active-touch">
+            <i class="fa-solid fa-border-all text-base"></i><span>Celdas</span>
+            <span id="mobile-cell-count" class="mobile-nav-badge bg-slate-800 text-slate-300 border border-slate-700">0</span>
+        </button>
+        <button data-tab="analytics" class="mobile-nav-btn active-touch">
+            <i class="fa-solid fa-chart-line text-base"></i><span>Análisis</span>
+        </button>
+        <button data-tab="alerts" class="mobile-nav-btn active-touch">
+            <i class="fa-solid fa-triangle-exclamation text-base"></i><span>Alertas</span>
+            <span id="mobile-alert-count" class="mobile-nav-badge bg-red-500 text-white hidden">0</span>
+        </button>
+    </div>
+</nav>
+
+<!-- Panel de opciones (móvil) -->
+<div id="mobile-sheet" class="md:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex-col justify-end" onclick="if (event.target === this) closeMobileSheet()">
+    <div class="mobile-sheet-pad bg-slate-900 border-t border-slate-800 rounded-t-[28px] p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="mobile-sheet-title">
+        <div class="w-12 h-1 bg-slate-700 rounded-full mx-auto"></div>
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 id="mobile-sheet-title" class="font-bold text-white text-base">Opciones</h3>
+                <p class="text-xs text-slate-400">Período, secciones y documentación de la API</p>
+            </div>
+            <button onclick="closeMobileSheet()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-sm" aria-label="Cerrar">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div>
+            <label for="period-select-mobile" class="block text-xs font-medium text-slate-300 mb-1">Período de análisis</label>
+            <select id="period-select-mobile" class="period-select w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-sm focus:outline-none focus:border-amber-500">
+                <option value="1">Últimas 24 h</option>
+                <option value="7" selected>Últimos 7 días</option>
+                <option value="30">Últimos 30 días</option>
+            </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+            <button data-tab="service" class="active-touch p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-left">
+                <i class="fa-solid fa-plug-circle-bolt text-amber-400"></i>
+                <span class="block text-xs font-semibold text-white mt-1.5">Estado del servicio</span>
+            </button>
+            <button data-tab="project" class="active-touch p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-left">
+                <i class="fa-solid fa-users text-amber-400"></i>
+                <span class="block text-xs font-semibold text-white mt-1.5">Proyecto y equipo</span>
+            </button>
+        </div>
+
+        <div class="space-y-2">
+            <a href="/docs" class="active-touch w-full py-3 rounded-xl bg-amber-500 text-slate-950 font-bold text-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-bolt"></i> Probar la API (Swagger)
+            </a>
+            <a href="/redoc" class="active-touch w-full py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-book-open"></i> Documentación (ReDoc)
+            </a>
+            <button onclick="exportReadingsCsv()" class="active-touch w-full py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-download"></i> Descargar lecturas (CSV)
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Detalle de celda: panel inferior en móvil, ventana centrada en escritorio -->
+<div id="cell-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-end md:items-center justify-center p-0 md:p-4" onclick="if (event.target === this) closeCellModal()">
+    <div class="mobile-sheet-pad bg-slate-900 border-t md:border border-slate-800 rounded-t-[28px] md:rounded-2xl w-full max-w-2xl p-5 md:p-6 shadow-2xl relative max-h-[85vh] md:max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-cell-title">
+        <div class="md:hidden w-12 h-1 bg-slate-700 rounded-full mx-auto mb-4"></div>
+        <button onclick="closeCellModal()" class="absolute top-4 right-4 md:top-4 text-slate-400 hover:text-white text-lg" aria-label="Cerrar">
             <i class="fa-solid fa-xmark"></i>
         </button>
         <div class="flex items-center gap-3 mb-5">
@@ -452,7 +534,7 @@
     </div>
 </div>
 
-<div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none" aria-live="polite"></div>
+<div id="toast-container" class="fixed top-16 inset-x-4 md:inset-x-auto md:top-auto md:bottom-5 md:right-5 z-[60] space-y-2 pointer-events-none" aria-live="polite"></div>
 
 <script src="main.js"></script>
 </body>

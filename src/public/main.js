@@ -234,8 +234,12 @@ function renderKpis() {
         $('kpi-last-reading-note').textContent = 'Sin lecturas todavía';
     }
 
+    const recentAnomalies = state.readings.filter((r) => r.is_anomaly).length;
     $('cell-count-badge').textContent = state.cells.length;
-    $('alert-count-badge').textContent = state.readings.filter((r) => r.is_anomaly).length;
+    $('alert-count-badge').textContent = recentAnomalies;
+    $('mobile-cell-count').textContent = state.cells.length;
+    $('mobile-alert-count').textContent = recentAnomalies > 99 ? '99+' : recentAnomalies;
+    $('mobile-alert-count').classList.toggle('hidden', recentAnomalies === 0);
     $('no-cells-notice').classList.toggle('hidden', state.cells.length > 0);
 }
 
@@ -254,6 +258,11 @@ function chartsAvailable() {
     return typeof window.Chart !== 'undefined';
 }
 
+// Mismo corte que el breakpoint md de Tailwind usado en index.html.
+function isMobile() {
+    return window.matchMedia('(max-width: 767px)').matches;
+}
+
 function renderTimelineChart() {
     if (!chartsAvailable()) return;
     const cell = cellById(state.selectedCellId);
@@ -265,6 +274,7 @@ function renderTimelineChart() {
     const threshold = rows.map(() => (cell ? cell.efficiency_threshold : null));
 
     if (!charts.timeline) {
+        const compact = isMobile();
         charts.timeline = new Chart($('timelineChart'), {
             type: 'line',
             data: {
@@ -281,9 +291,9 @@ function renderTimelineChart() {
                 interaction: { mode: 'index', intersect: false },
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { size: 10 }, maxTicksLimit: 8 } },
-                    y: { position: 'left', grid: { color: GRID_COLOR }, ticks: { color: '#f59e0b', font: { size: 10 } }, title: { display: true, text: 'V', color: '#f59e0b' } },
-                    y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#06b6d4', font: { size: 10 } }, title: { display: true, text: '%', color: '#06b6d4' } },
+                    x: { grid: { color: GRID_COLOR }, ticks: { color: TICK_COLOR, font: { size: compact ? 9 : 10 }, maxTicksLimit: compact ? 4 : 8, maxRotation: 0 } },
+                    y: { position: 'left', grid: { color: GRID_COLOR }, ticks: { color: '#f59e0b', font: { size: compact ? 9 : 10 } }, title: { display: !compact, text: 'V', color: '#f59e0b' } },
+                    y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#06b6d4', font: { size: compact ? 9 : 10 } }, title: { display: !compact, text: '%', color: '#06b6d4' } },
                 },
             },
         });
@@ -396,19 +406,19 @@ function renderCellGrid() {
         const latest = latestReadingOf(cell.id);
         const summary = state.summaries.get(cell.id);
         return `
-            <button type="button" onclick="openCellModal(${cell.id})" class="text-left border rounded-xl p-4 transition-all duration-200 flex flex-col gap-3 ${status.card}">
-                <div class="min-w-0">
-                    <p class="font-bold text-sm text-white truncate">${escapeHtml(cell.name)}</p>
-                    <p class="text-[10px] font-semibold uppercase tracking-wide ${status.text}">${status.label}</p>
-                    <p class="text-[11px] text-slate-400 mt-1 truncate"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(cell.location)}</p>
+            <button type="button" onclick="openCellModal(${cell.id})" class="active-touch text-left border rounded-xl p-2.5 md:p-4 transition-all duration-200 flex flex-col gap-2 md:gap-3 min-w-0 ${status.card}">
+                <div class="min-w-0 w-full">
+                    <p class="font-bold text-xs md:text-sm text-white truncate">${escapeHtml(cell.name)}</p>
+                    <p class="text-[9px] md:text-[10px] font-semibold uppercase tracking-wide truncate ${status.text}">${status.label}</p>
+                    <p class="text-[10px] md:text-[11px] text-slate-400 mt-1 truncate"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(cell.location)}</p>
                 </div>
                 <div>
-                    <span class="text-2xl font-bold tracking-tight text-white">${latest ? fmt(latest.voltage_measured) : '—'} <small class="text-xs font-normal text-slate-400">V</small></span>
-                    <p class="text-[11px] text-slate-400">${latest ? `${fmt(latest.efficiency_percentage, 1)} % · ${escapeHtml(timeAgo(latest.timestamp))}` : 'Sin lecturas recientes'}</p>
+                    <span class="text-base md:text-2xl font-bold tracking-tight text-white">${latest ? fmt(latest.voltage_measured) : '—'} <small class="text-[10px] md:text-xs font-normal text-slate-400">V</small></span>
+                    <p class="text-[10px] md:text-[11px] text-slate-400 truncate">${latest ? `${fmt(latest.efficiency_percentage, 1)} % · ${escapeHtml(timeAgo(latest.timestamp))}` : 'Sin lecturas recientes'}</p>
                 </div>
-                <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/60">
-                    <span>Nominal ${fmt(cell.rated_voltage)} V</span>
-                    <span>${summary ? `${summary.anomaly_count} anomalía(s)` : '—'}</span>
+                <div class="w-full flex items-center justify-between gap-1 text-[9px] md:text-[11px] text-slate-400 pt-1.5 md:pt-2 border-t border-slate-800/60">
+                    <span class="truncate">Nom. ${fmt(cell.rated_voltage)} V</span>
+                    <span class="whitespace-nowrap">${summary ? `${summary.anomaly_count} anom.` : '—'}</span>
                 </div>
             </button>`;
     }).join('');
@@ -436,6 +446,29 @@ function renderAnalytics() {
                 </tr>`;
         }).join('')
         : '<tr><td colspan="9" class="py-6 text-center text-slate-500">Sin celdas registradas.</td></tr>';
+
+    $('summary-cards').innerHTML = cells.length
+        ? cells.map((cell, i) => {
+            const s = summaries[i];
+            const effClass = s && s.avg_efficiency < cell.efficiency_threshold ? 'text-amber-400' : 'text-emerald-400';
+            return `
+                <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-semibold text-white truncate">${escapeHtml(cell.name)}</span>
+                        <span class="text-sm font-bold whitespace-nowrap ${s ? effClass : 'text-slate-500'}">${s ? `${fmt(s.avg_efficiency, 1)} %` : 'Sin datos'}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-2 text-[10px] text-slate-400">
+                        <span>Mín <strong class="block text-slate-200 font-mono">${s ? fmt(s.min_voltage) : '—'} V</strong></span>
+                        <span>Prom <strong class="block text-slate-200 font-mono">${s ? fmt(s.avg_voltage) : '—'} V</strong></span>
+                        <span>Máx <strong class="block text-slate-200 font-mono">${s ? fmt(s.max_voltage) : '—'} V</strong></span>
+                    </div>
+                    <p class="mt-2 text-[10px] text-slate-500">
+                        ${s ? s.reading_count : 0} lecturas · nominal ${fmt(cell.rated_voltage)} V · umbral ${fmt(cell.efficiency_threshold, 0)} %
+                        · <span class="${s && s.anomaly_count ? 'text-amber-400 font-semibold' : ''}">${s ? s.anomaly_count : 0} anomalías</span>
+                    </p>
+                </div>`;
+        }).join('')
+        : '<p class="py-4 text-center text-xs text-slate-500">Sin celdas registradas.</p>';
 
     if (!chartsAvailable()) return;
 
@@ -496,10 +529,32 @@ function renderAnalytics() {
 function renderAlerts() {
     document.querySelectorAll('.alert-filter').forEach((btn) => {
         const active = btn.dataset.alertFilter === state.alertFilter;
-        btn.className = `alert-filter px-2.5 py-1 rounded font-medium transition-all ${active ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'}`;
+        btn.className = `alert-filter flex-1 md:flex-none whitespace-nowrap px-1.5 md:px-2.5 py-1.5 md:py-1 rounded font-medium transition-all ${active ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'}`;
     });
 
     const rows = anomalyRows().filter(({ causes }) => state.alertFilter === 'all' || causes.includes(state.alertFilter));
+
+    $('alerts-feed').innerHTML = rows.length
+        ? rows.map(({ reading, cell, causes }) => {
+            const primary = CAUSE_META[causes[0]];
+            return `
+                <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-start gap-2.5">
+                    <i class="fa-solid ${primary.icon} mt-0.5"></i>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-baseline justify-between gap-2">
+                            <span class="text-xs font-bold text-slate-200 truncate">${escapeHtml(cell ? cell.name : `Celda ${reading.cell_id}`)}</span>
+                            <span class="text-[10px] text-slate-500 font-mono whitespace-nowrap">${escapeHtml(timeAgo(reading.timestamp))}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-0.5">${causes.map((c) => CAUSE_META[c].label).join(' · ')}</p>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-semibold border ${primary.badge}">${primary.severity.toUpperCase()}</span>
+                            <span class="text-[11px] font-mono text-amber-400">${fmt(reading.voltage_measured)} V</span>
+                            <span class="text-[11px] font-mono text-slate-400">${fmt(reading.efficiency_percentage, 1)} %</span>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('')
+        : `<p class="py-4 text-center text-xs text-slate-500">Sin anomalías en las últimas ${READINGS_LIMIT} lecturas.</p>`;
     $('alerts-table-body').innerHTML = rows.length
         ? rows.map(({ reading, cell, causes }) => {
             const primary = CAUSE_META[causes[0]];
@@ -538,6 +593,10 @@ function setApiStatus(status) {
     const [classes, dot, label] = styles[status];
     badge.className = `flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full border ${classes}`;
     badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${dot}"></span> ${label}`;
+    $('mobile-status-dot').className = `w-1.5 h-1.5 rounded-full ${dot.replace(' animate-ping', ' animate-pulse')}`;
+    $('mobile-status-text').textContent = status === 'online' && state.lastUpdated
+        ? `${label} · ${state.lastUpdated.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`
+        : label;
 }
 
 // ---------- detalle de celda ----------
@@ -585,11 +644,13 @@ async function openCellModal(cellId) {
 
     try {
         const rows = await getJson(`/api/v1/readings/cell/${cell.id}?limit=${MODAL_READINGS_LIMIT}`, { allowNotFound: true });
+        // En móvil la fecha sin segundos deja espacio para la columna de estado.
+        const formatWhen = isMobile() ? formatShortTime : formatDate;
         $('modal-readings').innerHTML = rows && rows.length
-            ? `<div class="overflow-x-auto"><table class="w-full text-left">
-                <thead><tr class="text-slate-400 border-b border-slate-800"><th class="py-2 pr-3">Fecha</th><th class="py-2 pr-3 text-right">Voltaje</th><th class="py-2 pr-3 text-right">Eficiencia</th><th class="py-2">Estado</th></tr></thead>
+            ? `<div class="overflow-x-auto"><table class="w-full text-left text-[11px] md:text-xs">
+                <thead><tr class="text-slate-400 border-b border-slate-800"><th class="py-2 pr-2 md:pr-3">Fecha</th><th class="py-2 pr-2 md:pr-3 text-right">Voltaje</th><th class="py-2 pr-2 md:pr-3 text-right">Efic.</th><th class="py-2">Estado</th></tr></thead>
                 <tbody class="divide-y divide-slate-800/60">${rows.map((r) => `
-                    <tr><td class="py-2 pr-3 font-mono text-slate-400 whitespace-nowrap">${escapeHtml(formatDate(r.timestamp))}</td>
+                    <tr><td class="py-2 pr-2 md:pr-3 font-mono text-slate-400 whitespace-nowrap">${escapeHtml(formatWhen(r.timestamp))}</td>
                         <td class="py-2 pr-3 text-right font-mono text-slate-200">${fmt(r.voltage_measured)} V</td>
                         <td class="py-2 pr-3 text-right font-mono text-slate-200">${fmt(r.efficiency_percentage, 1)} %</td>
                         <td class="py-2 ${r.is_anomaly ? 'text-red-400' : 'text-emerald-400'}">${r.is_anomaly ? anomalyCauses(r, cell).map((c) => CAUSE_META[c].label).join(' · ') : 'Normal'}</td></tr>`).join('')}
@@ -617,35 +678,48 @@ function closeCellModal() {
 // ---------- controles ----------
 
 function switchTab(tabId) {
+    const changed = state.tab !== tabId;
     state.tab = tabId;
     document.querySelectorAll('.tab-content').forEach((el) => el.classList.add('hidden'));
     $(`tab-${tabId}`).classList.remove('hidden');
     document.querySelectorAll('.nav-btn').forEach((btn) => {
         btn.className = btn.dataset.tab === tabId ? NAV_ACTIVE : NAV_IDLE;
+    });
+    document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach((btn) => {
         btn.setAttribute('aria-current', btn.dataset.tab === tabId ? 'page' : 'false');
     });
     $('page-title').textContent = TAB_TITLES[tabId];
-    toggleSidebar(false);
+    closeMobileSheet();
+    if (changed) document.querySelector('main').scrollTop = 0;
     // Chart.js no mide bien un canvas creado dentro de una pestaña oculta.
     requestAnimationFrame(() => Object.values(charts).forEach((chart) => chart && chart.resize()));
 }
 
-function toggleSidebar(open) {
-    $('sidebar').classList.toggle('-translate-x-full', !open);
-    $('sidebar-backdrop').classList.toggle('hidden', !open);
+function openMobileSheet() {
+    const sheet = $('mobile-sheet');
+    sheet.classList.remove('hidden');
+    sheet.classList.add('flex');
 }
+
+function closeMobileSheet() {
+    const sheet = $('mobile-sheet');
+    sheet.classList.add('hidden');
+    sheet.classList.remove('flex');
+}
+
+const STREAM_BTN_BASE = 'active-touch flex items-center justify-center gap-2 w-9 h-9 md:w-auto md:h-auto md:px-3 md:py-1.5 rounded-lg text-xs font-semibold border transition-all';
 
 function toggleStreaming() {
     state.live = !state.live;
     const btn = $('toggle-stream-btn');
     if (state.live) {
-        btn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-all';
+        btn.className = `${STREAM_BTN_BASE} bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20`;
         $('stream-btn-icon').className = 'fa-solid fa-pause';
         $('stream-btn-text').textContent = 'En vivo';
         refresh();
         showToast('Actualización automática reanudada', 'success');
     } else {
-        btn.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 transition-all';
+        btn.className = `${STREAM_BTN_BASE} bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20`;
         $('stream-btn-icon').className = 'fa-solid fa-play';
         $('stream-btn-text').textContent = 'Pausado';
         showToast('Actualización automática pausada', 'info');
@@ -702,16 +776,19 @@ function showToast(message, type = 'info') {
 document.addEventListener('DOMContentLoaded', () => {
     $('api-origin-text').textContent = window.location.origin;
 
-    document.querySelectorAll('.nav-btn').forEach((btn) => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+    // Barra lateral (escritorio), barra inferior y panel de opciones (móvil).
+    document.querySelectorAll('button[data-tab]').forEach((btn) => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
     document.querySelectorAll('.alert-filter').forEach((btn) => btn.addEventListener('click', () => {
         state.alertFilter = btn.dataset.alertFilter;
         renderAlerts();
     }));
 
-    $('period-select').addEventListener('change', (event) => {
+    // Hay un selector de período en el encabezado (escritorio) y otro en el panel (móvil).
+    document.querySelectorAll('.period-select').forEach((select) => select.addEventListener('change', (event) => {
         state.days = Number(event.target.value);
+        document.querySelectorAll('.period-select').forEach((other) => { other.value = event.target.value; });
         refresh();
-    });
+    }));
     $('cell-select').addEventListener('change', (event) => selectCell(Number(event.target.value)));
     $('polling-select').addEventListener('change', (event) => {
         state.pollMs = Number(event.target.value);
@@ -719,7 +796,10 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Frecuencia de actualización guardada', 'success');
     });
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') closeCellModal();
+        if (event.key === 'Escape') {
+            closeCellModal();
+            closeMobileSheet();
+        }
     });
 
     if (!chartsAvailable()) showToast('No se pudo cargar Chart.js: las gráficas no estarán disponibles', 'error');
