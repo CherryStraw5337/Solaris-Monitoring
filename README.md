@@ -9,7 +9,7 @@ API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia,
 - Persistencia con SQLAlchemy y migraciones Alembic.
 - PostgreSQL en Docker y SQLite para desarrollo y pruebas.
 - Arquitectura separada por routers, servicios, repositorios, esquemas y dominio.
-- Panel HTML servido por `/` y actualizado con el estado de `/health`.
+- Dashboard web en `/` con eficiencia, anomalías y resumen por celda, alimentado solo por endpoints `GET` públicos.
 - CI/CD con Ruff, Mypy, Pytest, cobertura mínima del 90 %, migraciones y build Docker.
 - Endpoints protegidos para escritura (POST/PUT/DELETE) con validación de API key.
 - Endpoints públicos para lectura (GET) sin autenticación.
@@ -43,7 +43,8 @@ La API utiliza `DATABASE_URL`; consulta `.env.example` para las variables dispon
 src/
 ├── main.py                 # Aplicación FastAPI, gestión global de settings y registro de routers
 ├── db.py                   # Motor, sesión y base SQLAlchemy
-├── utils/
+├── public/                 # Dashboard web servido en / (index.html, main.js, style.css)
+└── utils/
     ├── config.py           # Configuración centralizada y validación de DEVICE_API_KEY
     ├── dependencies.py     # Inyección de dependencias (verify_api_key, etc.)
     ├── clock.py            # Utilidades de fecha y hora
@@ -54,12 +55,6 @@ src/
     ├── routers/            # Endpoints HTTP (/health, /api/v1/cells, /api/v1/readings)
     ├── schemas/            # Esquemas Pydantic (contratos de entrada/salida)
     └── services/           # Lógica de negocio y casos de uso
-└── public/
-    ├── resource/
-        └── paneles.jpg # Imagen de paneles para fondo
-    ├── index.html      # Panel de estado HTML
-    ├── main.js         # JS base
-    └── style.css       # Estilizado de páginas
 
 tests/
 ├── conftest.py             # Fixtures compartidas de pytest
@@ -120,6 +115,8 @@ La cobertura mínima está definida en `pyproject.toml` y es del 90 %.
 ## Despliegue
 
 El `Dockerfile` ejecuta las migraciones antes de iniciar Uvicorn. `render.yaml` contiene la configuración base para Render. La documentación adicional está en [docs/API.md](docs/API.md), [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) y [docs/ESP32_INTEGRATION.md](docs/ESP32_INTEGRATION.md).
+
+Deploy en Render: [https://solaris-monitoring-api.onrender.com/](https://solaris-monitoring-api.onrender.com/)
 
 ## Contribución
 

@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from db import SessionLocal
+from db import Base, SessionLocal, engine
 from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
 from utils.mqtt_adapter import MQTTAdapter
@@ -16,7 +16,6 @@ from utils.routers import cells, health, readings
 API_PREFIX = "/api/v1"
 PUBLIC_DIR = Path(__file__).resolve().parent / "public"
 
-# Almacenar Settings globalmente para usarlo en dependencias
 _current_settings: Settings | None = None
 _mqtt_adapter: MQTTAdapter | None = None
 
@@ -36,19 +35,15 @@ def get_mqtt_adapter() -> MQTTAdapter | None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """Manage FastAPI lifespan events: startup and shutdown.
-
-    Starts MQTT adapter connection in a background thread on startup.
-    Gracefully stops MQTT connection on shutdown.
-    """
+    """Manage FastAPI lifespan events: startup and shutdown."""
     global _mqtt_adapter
 
-    # Startup
+    Base.metadata.create_all(bind=engine)
+
     settings = get_settings()
     _mqtt_adapter = MQTTAdapter(settings, SessionLocal)
 
     if _mqtt_adapter.enabled:
-        # Run MQTT connection in background thread (non-blocking)
         mqtt_thread = threading.Thread(target=_mqtt_adapter.connect, daemon=True)
         mqtt_thread.start()
         print("🟢 MQTT adapter started in background thread")
@@ -57,7 +52,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     yield
 
-    # Shutdown
     if _mqtt_adapter:
         _mqtt_adapter.disconnect()
         print("🔴 MQTT adapter disconnected")
@@ -70,7 +64,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title=resolved.api_title,
-        description="API REST para monitoreo de eficiencia de celdas fotovoltaicas",
+        description="API REST y MQTT para monitoreo de eficiencia de celdas fotovoltaicas",
         version=resolved.api_version,
         lifespan=lifespan,
     )
