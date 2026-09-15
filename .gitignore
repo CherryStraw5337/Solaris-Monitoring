@@ -48,9 +48,6 @@ htmlcov/
 
 # Environment variables
 .env
-
-# AI Customization (local per developer)
-AGENTS.md
 .env.local
 .env.*.local
 
