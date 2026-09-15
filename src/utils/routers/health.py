@@ -9,7 +9,7 @@ router = APIRouter(tags=["health"])
 @router.get("/health")
 def health_check() -> dict[str, str]:
     from main import get_mqtt_adapter
-    
+
     configured_date = os.environ.get("UPDATE_DATE")
     if configured_date:
         try:
@@ -20,11 +20,11 @@ def health_check() -> dict[str, str]:
         update_date = "No definida"
 
     operational = update_date != "Configuración inválida"
-    
+
     # Get MQTT adapter status
     mqtt_adapter = get_mqtt_adapter()
     mqtt_status = mqtt_adapter.get_status() if mqtt_adapter else "disabled"
-    
+
     return {
         "status": "ok" if operational else "degraded",
         "service_status": "operational" if operational else "degraded",

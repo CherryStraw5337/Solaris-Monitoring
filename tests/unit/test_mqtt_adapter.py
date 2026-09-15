@@ -71,36 +71,30 @@ class TestMQTTAdapter:
         assert adapter._extract_cell_id_from_topic("invalid/topic") is None
         assert adapter._extract_cell_id_from_topic("solaris/invalid/123/readings") is None
 
-    def test_on_connect_success(
-        self, mqtt_settings: Settings, mock_db_factory: Mock
-    ) -> None:
+    def test_on_connect_success(self, mqtt_settings: Settings, mock_db_factory: Mock) -> None:
         """On connect callback sets status to connected and subscribes."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         mock_client = MagicMock()
-        
+
         adapter._on_connect(mock_client, None, {}, 0)
-        
+
         assert adapter.status == "connected"
         mock_client.subscribe.assert_called_once_with(mqtt_settings.mqtt_topic, qos=1)
 
-    def test_on_connect_failure(
-        self, mqtt_settings: Settings, mock_db_factory: Mock
-    ) -> None:
+    def test_on_connect_failure(self, mqtt_settings: Settings, mock_db_factory: Mock) -> None:
         """On connect callback sets status to disconnected on failure."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         mock_client = MagicMock()
-        
+
         adapter._on_connect(mock_client, None, {}, 1)  # Non-zero rc means error
-        
+
         assert adapter.status == "disconnected"
 
-    def test_on_disconnect(
-        self, mqtt_settings: Settings, mock_db_factory: Mock
-    ) -> None:
+    def test_on_disconnect(self, mqtt_settings: Settings, mock_db_factory: Mock) -> None:
         """On disconnect callback sets status."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         mock_client = MagicMock()
-        
+
         adapter._on_disconnect(mock_client, None, 0)
         assert adapter.status == "disconnected"
 
@@ -113,21 +107,20 @@ class TestMQTTMessageHandling:
     ) -> None:
         """Valid JSON payload creates reading."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
-        
+
         with patch("utils.mqtt_adapter.ReadingService") as mock_service_class:
             mock_service = MagicMock()
             mock_service_class.return_value = mock_service
-            
+
             # Create a mock MQTT message
             mock_msg = MagicMock()
             mock_msg.topic = "solaris/cells/1/readings"
-            mock_msg.payload = json.dumps({
-                "voltage_measured": 4.85,
-                "timestamp": "2026-09-14T10:00:00Z"
-            }).encode("utf-8")
-            
+            mock_msg.payload = json.dumps(
+                {"voltage_measured": 4.85, "timestamp": "2026-09-14T10:00:00Z"}
+            ).encode("utf-8")
+
             adapter._on_message(MagicMock(), None, mock_msg)
-            
+
             # Verify ReadingService.create was called
             mock_service.create.assert_called_once()
 
@@ -136,11 +129,11 @@ class TestMQTTMessageHandling:
     ) -> None:
         """Invalid JSON payload is logged and ignored."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
-        
+
         mock_msg = MagicMock()
         mock_msg.topic = "solaris/cells/1/readings"
         mock_msg.payload = b"{ invalid json }"
-        
+
         with patch("utils.mqtt_adapter.logger") as mock_logger:
             adapter._on_message(MagicMock(), None, mock_msg)
             mock_logger.warning.assert_called()
@@ -150,11 +143,11 @@ class TestMQTTMessageHandling:
     ) -> None:
         """Invalid topic format is logged and ignored."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
-        
+
         mock_msg = MagicMock()
         mock_msg.topic = "invalid/topic/format"
         mock_msg.payload = json.dumps({"voltage_measured": 4.85}).encode("utf-8")
-        
+
         with patch("utils.mqtt_adapter.logger") as mock_logger:
             adapter._on_message(MagicMock(), None, mock_msg)
             mock_logger.warning.assert_called()
@@ -164,24 +157,24 @@ class TestMQTTMessageHandling:
     ) -> None:
         """Missing required field in payload is logged and ignored."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
-        
+
         mock_msg = MagicMock()
         mock_msg.topic = "solaris/cells/1/readings"
-        mock_msg.payload = json.dumps({
-            "timestamp": "2026-09-14T10:00:00Z"
-            # Missing voltage_measured
-        }).encode("utf-8")
-        
+        mock_msg.payload = json.dumps(
+            {
+                "timestamp": "2026-09-14T10:00:00Z"
+                # Missing voltage_measured
+            }
+        ).encode("utf-8")
+
         with patch("utils.mqtt_adapter.logger") as mock_logger:
             adapter._on_message(MagicMock(), None, mock_msg)
             mock_logger.warning.assert_called()
 
-    def test_get_status(
-        self, mqtt_settings: Settings, mock_db_factory: Mock
-    ) -> None:
+    def test_get_status(self, mqtt_settings: Settings, mock_db_factory: Mock) -> None:
         """Get current MQTT status."""
         adapter = MQTTAdapter(mqtt_settings, mock_db_factory)
         assert adapter.get_status() == "disabled"
-        
+
         adapter.status = "connected"
         assert adapter.get_status() == "connected"

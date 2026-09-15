@@ -10,6 +10,59 @@
  
 ---
 
+# Lyla Alice - Prompt #44
+
+### IA Utilizada: GitHub Copilot (Claude Haiku 4.5)
+
+**Prompt del integrante completo:**
+> Después de cada respuesta, debes agregar el log al AI_LOG_Lyla.md con el formato ya establecido
+> 
+> [Skill instruction: Create or update chat customization files for the Solaris Monitoring codebase]
+
+**Respuesta de la IA completa:**
+
+Creación de archivo de customización `AGENTS.md` con guía completa para agentes de IA:
+
+**AGENTS.md Created:**
+- ✅ Quick Start Commands (dev, Docker, quality checks, migrations)
+- ✅ 4-Layer Architecture diagram and file organization
+- ✅ Dependency Injection patterns (FastAPI Depends)
+- ✅ Configuration management (Settings dataclass, env-based)
+- ✅ API Security (X-API-Key header validation, timing attack prevention)
+- ✅ MQTT Integration (optional, background thread)
+- ✅ Code Style Conventions (100 char limit, Python 3.12, type hints mandatory)
+- ✅ Database Patterns (SQLAlchemy 2.0, Alembic migrations, UTC timestamps)
+- ✅ Testing Strategy (pytest, 90% coverage minimum, structure)
+- ✅ Business Logic Rules (efficiency formula, anomaly detection, clock tolerance)
+- ✅ 7 Common Pitfalls with Solutions (Callable typing, unused imports, datetime UTC, etc.)
+- ✅ Documentation References (links to API.md, DEPLOYMENT.md, ADRs, AI logs)
+- ✅ AI Logging Format with example reference
+- ✅ CI/CD Pipeline summary
+
+**File Structure:**
+- Placed at: `AGENTS.md` (root of repository)
+- Format: Markdown with clear sections, code blocks, tables
+- Includes: Direct links to relevant project files using relative paths
+- AI-friendly: Actionable guidelines, not just theory
+
+**Coverage:**
+- Covers all major project patterns and conventions
+- Links to existing documentation to avoid duplication
+- Provides quick reference commands for common tasks
+- Documents team conventions for AI logging
+
+**Qué se aceptó:** 
+- AGENTS.md file created with comprehensive AI agent customization
+- All sections aligned with project's actual architecture, patterns, and team practices
+- Links to existing docs (API.md, DEPLOYMENT.md, etc.) properly set up
+- AI logging format documented with reference to existing logs
+
+**Qué se denegó:** N/A
+
+**Qué se modificó:** N/A (new file, no modifications needed)
+
+---
+
 # Lyla Alice - Prompt #43
 
 ### IA Utilizada: GitHub Copilot (Claude Haiku 4.5)

@@ -52,9 +52,7 @@ class MQTTAdapter:
             return parts[2]
         return None
 
-    def _on_connect(
-        self, client: mqtt.Client, userdata: None, flags: dict, rc: int
-    ) -> None:
+    def _on_connect(self, client: mqtt.Client, userdata: None, flags: dict, rc: int) -> None:
         """Callback for MQTT connection events."""
         if rc == 0:
             logger.info(
@@ -75,9 +73,7 @@ class MQTTAdapter:
             logger.warning("MQTT disconnected with code %d", rc)
         self.status = "disconnected"
 
-    def _on_message(
-        self, client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage
-    ) -> None:
+    def _on_message(self, client: mqtt.Client, userdata: None, msg: mqtt.MQTTMessage) -> None:
         """Callback for MQTT message reception. Validates and ingests readings.
 
         Args:
@@ -119,9 +115,7 @@ class MQTTAdapter:
             analyzer = build_reading_analyzer()
             service = ReadingService(readings=reading_repo, cells=cell_repo, analyzer=analyzer)
             service.create(reading_data)
-            logger.info(
-                "Reading ingested from MQTT topic %s for cell_id %s", topic, cell_id_str
-            )
+            logger.info("Reading ingested from MQTT topic %s for cell_id %s", topic, cell_id_str)
         except Exception as e:
             logger.error("Error ingesting reading from MQTT topic %s: %s", topic, e)
         finally:
@@ -149,18 +143,14 @@ class MQTTAdapter:
 
         # Set username and password if provided
         if self.settings.mqtt_username and self.settings.mqtt_password:
-            self.client.username_pw_set(
-                self.settings.mqtt_username, self.settings.mqtt_password
-            )
+            self.client.username_pw_set(self.settings.mqtt_username, self.settings.mqtt_password)
 
         # Enable TLS for secure connection to HiveMQ Cloud
         self.client.tls_set()
         self.client._tls_insecure = False
 
         try:
-            self.client.connect(
-                self.settings.mqtt_host, self.settings.mqtt_port, keepalive=60
-            )
+            self.client.connect(self.settings.mqtt_host, self.settings.mqtt_port, keepalive=60)
             self.status = "connecting"
             # Start the network loop (blocking until disconnect)
             self.client.loop_forever()

@@ -37,16 +37,16 @@ def get_mqtt_adapter() -> MQTTAdapter | None:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage FastAPI lifespan events: startup and shutdown.
-    
+
     Starts MQTT adapter connection in a background thread on startup.
     Gracefully stops MQTT connection on shutdown.
     """
     global _mqtt_adapter
-    
+
     # Startup
     settings = get_settings()
     _mqtt_adapter = MQTTAdapter(settings, SessionLocal)
-    
+
     if _mqtt_adapter.enabled:
         # Run MQTT connection in background thread (non-blocking)
         mqtt_thread = threading.Thread(target=_mqtt_adapter.connect, daemon=True)
@@ -54,9 +54,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         print("🟢 MQTT adapter started in background thread")
     else:
         print("⚪ MQTT adapter disabled (MQTT_HOST not configured)")
-    
+
     yield
-    
+
     # Shutdown
     if _mqtt_adapter:
         _mqtt_adapter.disconnect()
