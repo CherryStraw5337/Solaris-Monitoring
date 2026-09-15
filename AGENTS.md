@@ -1,10 +1,10 @@
-# AI Agent Customization for Solaris Monitoring
+# Customización de Agentes de IA para Solaris Monitoring
 
-This file helps AI coding agents be immediately productive in the Solaris Monitoring codebase.
+Este archivo ayuda a los agentes de IA de programación a ser inmediatamente productivos en el codebase de Solaris Monitoring.
 
-## 🚀 Quick Start Commands
+## Comandos de Inicio Rápido
 
-### Development Local
+### Desarrollo Local
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -12,192 +12,192 @@ pip install -r requirements-dev.txt
 uvicorn main:app --app-dir src --reload
 ```
 
-### Docker Setup
+### Configuración Docker
 ```bash
 docker compose up --build -d
 curl http://localhost:8000/health
 docker compose down
 ```
 
-### Code Quality (Required before PRs)
+### Calidad de Código (Requerido antes de PRs)
 ```bash
-ruff check .              # Lint validation
-ruff format --check .    # Format validation
-mypy src tests           # Type checking
-pytest --cov=src --cov-report=term-missing --cov-report=xml  # Tests + coverage (min 90%)
+ruff check .              # Validación de lint
+ruff format --check .    # Validación de formato
+mypy src tests           # Verificación de tipos
+pytest --cov=src --cov-report=term-missing --cov-report=xml  # Tests + cobertura (mín 90%)
 ```
 
-### Database Migrations
+### Migraciones de Base de Datos
 ```bash
-alembic upgrade head     # Apply migrations
-alembic revision --autogenerate -m "Description"  # Create new migration
+alembic upgrade head     # Aplicar migraciones
+alembic revision --autogenerate -m "Descripción"  # Crear nueva migración
 ```
 
-## 🏗️ Architecture & Design Patterns
+## Arquitectura y Patrones de Diseño
 
-### 4-Layer Architecture (src/ folder)
+### Arquitectura de 4 Capas (carpeta src/)
 
 ```
-Routers (API endpoints) → Schemas (Pydantic models)
+Routers (endpoints API) → Schemas (modelos Pydantic)
                 ↓
-        Services (Business logic)
+        Services (lógica de negocio)
                 ↓
-    Repositories (Data access)
+    Repositories (acceso a datos)
                 ↓
 Models (SQLAlchemy ORM)
 ```
 
-**Key Files by Responsibility:**
-- **Routers** (`src/utils/routers/`): HTTP endpoints, request validation
-  - `cells.py`: CRUD operations for photovoltaic cells
-  - `readings.py`: Voltage readings management
-  - `health.py`: API health check endpoint
-- **Schemas** (`src/utils/schemas/`): Pydantic models for request/response validation
-- **Services** (`src/utils/services/`): Business logic, orchestration
-  - `CellService`: Manages photovoltaic cells
-  - `ReadingService`: Handles readings with analysis (efficiency, anomalies)
-- **Repositories** (`src/utils/repositories/`): SQLAlchemy database operations
-  - Protocol-based abstractions (`protocols.py`)
-  - Implementations: `SqlAlchemyCellRepository`, `SqlAlchemyReadingRepository`
-- **Domain** (`src/utils/domain/`): Core business logic independent of frameworks
-  - `analysis.py`: Efficiency calculations and anomaly detection
-  - `errors.py`: Domain exceptions
+**Archivos Clave por Responsabilidad:**
+- **Routers** (`src/utils/routers/`): Endpoints HTTP, validación de solicitudes
+  - `cells.py`: Operaciones CRUD para celdas fotovoltaicas
+  - `readings.py`: Gestión de lecturas de voltaje
+  - `health.py`: Endpoint de verificación de salud de la API
+- **Schemas** (`src/utils/schemas/`): Modelos Pydantic para validación de entrada/salida
+- **Services** (`src/utils/services/`): Lógica de negocio, orquestación
+  - `CellService`: Gestiona celdas fotovoltaicas
+  - `ReadingService`: Maneja lecturas con análisis (eficiencia, anomalías)
+- **Repositories** (`src/utils/repositories/`): Operaciones SQLAlchemy en base de datos
+  - Abstracciones basadas en protocolos (`protocols.py`)
+  - Implementaciones: `SqlAlchemyCellRepository`, `SqlAlchemyReadingRepository`
+- **Domain** (`src/utils/domain/`): Lógica de negocio central independiente del framework
+  - `analysis.py`: Cálculos de eficiencia y detección de anomalías
+  - `errors.py`: Excepciones del dominio
 
-### Dependency Injection
-- Use FastAPI's `Depends()` pattern (see [src/utils/dependencies.py](src/utils/dependencies.py))
-- Services are instantiated fresh per request
-- Database session is auto-managed via `get_db()` context manager
+### Inyección de Dependencias
+- Usar patrón `Depends()` de FastAPI (ver [src/utils/dependencies.py](src/utils/dependencies.py))
+- Los servicios se instancian nuevos por cada solicitud
+- La sesión de BD se gestiona automáticamente mediante el gestor de contexto `get_db()`
 
-### Configuration
-- Centralized in [src/utils/config.py](src/utils/config.py) via `Settings` dataclass
-- Environment-based: loads from `os.environ`
-- In production: `ENVIRONMENT=production` + `DEVICE_API_KEY` are mandatory
-- Database URL auto-normalization for Render/Heroku-style URLs
+### Configuración
+- Centralizada en [src/utils/config.py](src/utils/config.py) mediante la clase `Settings`
+- Basada en entorno: carga desde `os.environ`
+- En producción: `ENVIRONMENT=production` + `DEVICE_API_KEY` son obligatorios
+- Auto-normalización de URL de BD para URLs de Render/Heroku
 
-### API Security
-- **Read endpoints** (`GET`): Public, no auth required
-- **Write endpoints** (`POST/PUT/DELETE`): Require `X-API-Key` header
-- Uses `secrets.compare_digest()` to prevent timing attacks
+### Seguridad de la API
+- **Endpoints de lectura** (`GET`): Públicos, sin autenticación
+- **Endpoints de escritura** (`POST/PUT/DELETE`): Requieren encabezado `X-API-Key`
+- Usa `secrets.compare_digest()` para prevenir ataques de timing
 
-### MQTT Integration
-- Optional, enabled only if `MQTT_HOST` env var is set
-- Background thread (non-blocking) started in FastAPI lifespan
-- Handled in [src/utils/mqtt_adapter.py](src/utils/mqtt_adapter.py)
+### Integración MQTT
+- Opcional, habilitada solo si la variable de entorno `MQTT_HOST` está configurada
+- Hilo de fondo (no bloqueante) iniciado en el lifespan de FastAPI
+- Manejado en [src/utils/mqtt_adapter.py](src/utils/mqtt_adapter.py)
 
-## 📐 Conventions & Patterns
+## Convenciones y Patrones
 
-### Code Style
-- **Line length**: 100 characters (configured in `pyproject.toml`)
+### Estilo de Código
+- **Longitud de línea**: 100 caracteres (configurado en `pyproject.toml`)
 - **Python**: 3.12+
-- **Import order**: E (errors) → F (pyflakes) → I (isort) → UP (upgrades) → B (bugbear)
-  - Ruff enforces this via pre-commit style
-- **Type hints**: Mandatory for all functions and methods (`disallow_untyped_defs = true`)
+- **Orden de importes**: E (errores) → F (pyflakes) → I (isort) → UP (upgrades) → B (bugbear)
+  - Ruff aplica este estilo mediante pre-commit
+- **Anotaciones de tipo**: Obligatorias para todas las funciones y métodos (`disallow_untyped_defs = true`)
 
-### Database Patterns
-- **ORM**: SQLAlchemy 2.0 (modern async-ready API)
-- **Migrations**: Alembic auto-generated from model changes
-- **Timestamps**: Always UTC via custom `UTCDateTime` type in [src/db.py](src/db.py)
-  - All `datetime` objects are normalized to UTC on write and re-enforced on read
-- **Foreign keys**: Cascade delete enabled (e.g., deleting a cell deletes its readings)
+### Patrones de Base de Datos
+- **ORM**: SQLAlchemy 2.0 (API moderna lista para async)
+- **Migraciones**: Generadas automáticamente por Alembic a partir de cambios en modelos
+- **Timestamps**: Siempre UTC mediante el tipo personalizado `UTCDateTime` en [src/db.py](src/db.py)
+  - Todos los objetos `datetime` se normalizan a UTC al escribir y se refuerzan al leer
+- **Claves foráneas**: Eliminación en cascada habilitada (ej: eliminar una celda elimina sus lecturas)
 
-### Testing
-- **Framework**: pytest with pytest-cov
-- **Min coverage**: 90% (enforced in CI)
-- **Fixtures**: Shared in [tests/conftest.py](tests/conftest.py)
-- **Fakes**: Mock objects in [tests/fakes.py](tests/fakes.py)
-- **Test structure**:
-  - `tests/unit/`: Service and utility tests
-  - `tests/integration/`: API endpoint tests via `httpx.AsyncClient`
-  - `tests/test_smoke.py`: Health check validation
+### Pruebas
+- **Framework**: pytest con pytest-cov
+- **Cobertura mínima**: 90% (aplicada en CI)
+- **Fixtures**: Compartidas en [tests/conftest.py](tests/conftest.py)
+- **Fakes**: Objetos mock en [tests/fakes.py](tests/fakes.py)
+- **Estructura de pruebas**:
+  - `tests/unit/`: Pruebas de servicios y utilidades
+  - `tests/integration/`: Pruebas de endpoints de API mediante `httpx.AsyncClient`
+  - `tests/test_smoke.py`: Validación de verificación de salud
 
-### Business Logic Rules
-Reference [docs/API.md](docs/API.md) for rules:
-- **Efficiency formula**: `(voltage_measured / rated_voltage) * 100`
-- **Max safe voltage**: `rated_voltage * 1.2` (server-derived)
-- **Anomaly flags**: voltage exceeds max_safe_voltage OR efficiency < threshold
-- **Device clock tolerance**: ±5 minutes (reject readings from future)
-- **Inactive cells**: Cannot accept new readings
+### Reglas de Lógica de Negocio
+Consultar [docs/API.md](docs/API.md) para reglas:
+- **Fórmula de eficiencia**: `(voltage_measured / rated_voltage) * 100`
+- **Voltaje máximo seguro**: `rated_voltage * 1.2` (derivado por servidor)
+- **Indicadores de anomalía**: Voltaje excede voltaje_máximo_seguro O eficiencia < umbral
+- **Tolerancia de reloj del dispositivo**: ±5 minutos (rechazar lecturas del futuro)
+- **Celdas inactivas**: No pueden aceptar lecturas nuevas
 
-## ⚠️ Common Pitfalls & Solutions
+## Errores Comunes y Soluciones
 
-### 1. **Type Errors with `Callable`**
-- **Problem**: mypy complains about `callable` (lowercase)
-- **Solution**: Use `from typing import Callable` and write `Callable[[...], ReturnType]`
+### 1. **Errores de Tipo con `Callable`**
+- **Problema**: mypy reclama sobre `callable` (minúsculas)
+- **Solución**: Usar `from typing import Callable` y escribir `Callable[[...], ReturnType]`
 
-### 2. **Unused Imports After Cleanup**
-- **Problem**: Removing dead code leaves unused imports
-- **Solution**: Run `ruff check .` before committing; Ruff will flag them
+### 2. **Importes Sin Usar Después de Limpieza**
+- **Problema**: Eliminar código muerto deja importes sin usar
+- **Solución**: Ejecutar `ruff check .` antes de hacer commit; Ruff los reportará
 
-### 3. **F-strings Without Placeholders**
-- **Problem**: `f"message"` triggers F541 (f-string-is-literal)
-- **Solution**: Use plain string `"message"` if no interpolation needed
+### 3. **F-strings Sin Placeholders**
+- **Problema**: `f"mensaje"` dispara F541 (f-string-is-literal)
+- **Solución**: Usar string plano `"mensaje"` si no hay interpolación
 
-### 4. **Alembic Revision Conflicts**
-- **Problem**: Multiple developers create migrations with same timestamp
-- **Solution**: Rebase and let Alembic renumber or manually merge `versions/` files
+### 4. **Conflictos de Revisión Alembic**
+- **Problema**: Múltiples desarrolladores crean migraciones con la misma marca de tiempo
+- **Solución**: Rebase y dejar que Alembic renumere o fusionar manualmente archivos `versions/`
 
-### 5. **datetime Without Timezone**
-- **Problem**: SQLite discards `tzinfo`, leading to naive datetimes
-- **Solution**: Always use `datetime.datetime.now(datetime.timezone.utc)` or rely on custom `UTCDateTime` type
+### 5. **datetime Sin Zona Horaria**
+- **Problema**: SQLite descarta `tzinfo`, resultando en datetimes ingenuos
+- **Solución**: Siempre usar `datetime.datetime.now(datetime.timezone.utc)` o confiar en tipo personalizado `UTCDateTime`
 
-### 6. **API Key Not Configured in Production**
-- **Problem**: DEVICE_API_KEY missing in production raises `ValueError` at startup
-- **Solution**: Add `DEVICE_API_KEY` as secret in Render/Docker environment
+### 6. **API Key No Configurada en Producción**
+- **Problema**: DEVICE_API_KEY faltante en producción genera `ValueError` al iniciar
+- **Solución**: Agregar `DEVICE_API_KEY` como secreto en entorno Render/Docker
 
-### 7. **MQTT Connection Hangs**
-- **Problem**: MQTT thread blocks startup if broker is unreachable
-- **Solution**: MQTT runs in daemon thread; non-blocking. Disable via omitting `MQTT_HOST`.
+### 7. **Conexión MQTT Se Cuelga**
+- **Problema**: Hilo MQTT bloquea inicio si broker es inaccesible
+- **Solución**: MQTT corre en hilo daemon; no bloqueante. Deshabilitarlo omitiendo `MQTT_HOST`
 
-## 📚 Documentation Reference
+## Referencias de Documentación
 
-- [docs/API.md](docs/API.md): REST API endpoints and business rules
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md): Docker, Render production, GitHub Actions setup
-- [docs/ESP32_INTEGRATION.md](docs/ESP32_INTEGRATION.md): MQTT/IoT device integration
+- [docs/API.md](docs/API.md): Endpoints API REST y reglas de negocio
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md): Docker, Render producción, configuración GitHub Actions
+- [docs/ESP32_INTEGRATION.md](docs/ESP32_INTEGRATION.md): Integración con dispositivos IoT ESP32
 - [docs/adr/](docs/adr/): Architecture Decision Records
-- [README.md](README.md): Project overview and quick start
-- [docs/ai_logs/](docs/ai_logs/): Team AI prompts and decisions (see format below)
+- [README.md](README.md): Descripción del proyecto e inicio rápido
+- [docs/ai_logs/](docs/ai_logs/): Prompts de IA del equipo y decisiones (ver formato abajo)
 
-## 📝 AI Logging Format
+## Formato de Registro de IA
 
-When working with AI, log your prompts and decisions in [docs/ai_logs/](docs/ai_logs/) using this structure:
+Al trabajar con IA, registra tus prompts y decisiones en [docs/ai_logs/](docs/ai_logs/) usando esta estructura:
 
 ```markdown
-# [Team Member Name] - Prompt #[Number]
+# [Nombre del Integrante] - Prompt #[Número]
 
 ### IA Utilizada: GitHub Copilot (Claude Haiku 4.5)
 
 **Prompt del integrante completo:**
-> [Full original prompt here]
+> [Prompt completo original aquí]
 
 **Respuesta de la IA completa:**
 
-[Full AI response with key decisions and changes]
+[Respuesta completa de IA con decisiones clave y cambios]
 
-**Qué se aceptó:** [What was kept from the response]
-**Qué se denegó:** [What was rejected and why]
-**Qué se modificó:** [What was changed after the response]
+**Qué se aceptó:** [Qué se mantuvo de la respuesta]
+**Qué se denegó:** [Qué se rechazó y por qué]
+**Qué se modificó:** [Qué se cambió después de la respuesta]
 ```
 
-Example: [docs/ai_logs/AI_LOG_Lyla.md](docs/ai_logs/AI_LOG_Lyla.md)
+Ejemplo: [docs/ai_logs/AI_LOG_Lyla.md](docs/ai_logs/AI_LOG_Lyla.md)
 
 ---
 
-## 🔧 When Working on Changes
+## Al Trabajar en Cambios
 
-1. **New Feature**: Create branch → Implement with tests → Run CI validation → PR
-2. **Code Quality Fix**: Run `ruff format .`, then `ruff check .` and `mypy src tests`
-3. **Database Change**: Create Alembic migration → Test locally → Commit with migration
-4. **API Change**: Update endpoint → Update Pydantic schema → Update [docs/API.md](docs/API.md) → Add tests
-5. **Configuration**: Add to [src/utils/config.py](src/utils/config.py) → Default sensible value → Document in README
+1. **Nueva Característica**: Crear rama → Implementar con pruebas → Ejecutar validación CI → PR
+2. **Arreglo de Calidad de Código**: Ejecutar `ruff format .`, luego `ruff check .` y `mypy src tests`
+3. **Cambio de Base de Datos**: Crear migración Alembic → Probar localmente → Commit con migración
+4. **Cambio de API**: Actualizar endpoint → Actualizar esquema Pydantic → Actualizar [docs/API.md](docs/API.md) → Agregar pruebas
+5. **Configuración**: Agregar a [src/utils/config.py](src/utils/config.py) → Valor por defecto sensato → Documentar en README
 
-## 🎯 CI/CD Pipeline
+## Pipeline CI/CD
 
-GitHub Actions (`.github/workflows/ci-cd.yml`) runs on every push:
+GitHub Actions (`.github/workflows/ci-cd.yml`) se ejecuta en cada push:
 1. Lint: `ruff check .`
-2. Format: `ruff format --check .`
-3. Type check: `mypy src tests`
-4. Tests: `pytest --cov=src` (min 90% coverage)
-5. Migrations: `alembic upgrade head`
-6. Docker build: Multi-stage image for production
+2. Formato: `ruff format --check .`
+3. Verificación de tipos: `mypy src tests`
+4. Pruebas: `pytest --cov=src` (cobertura mín 90%)
+5. Migraciones: `alembic upgrade head`
+6. Build Docker: Imagen multi-stage para producción
 
-All checks must pass before merge. No exceptions.
+Todas las verificaciones deben pasar antes de fusionar. Sin excepciones.
