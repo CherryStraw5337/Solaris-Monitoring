@@ -339,6 +339,222 @@ curl -X POST http://localhost:8000/api/v1/readings \
 
 ---
 
+## Canal MQTT (Alternativa de Bajo Consumo)
+
+Para dispositivos con batería limitada y conexión intermitente, la API Solaris Monitoring soporta ingesta de lecturas vía **MQTT** (Message Queuing Telemetry Transport). Este protocolo requiere menos energía y es ideal para IoT.
+
+### Configuración MQTT en Servidor
+
+La API se conecta a un broker MQTT gestionado (HiveMQ Cloud Serverless con TLS). Las credenciales se inyectan mediante variables de entorno:
+
+```bash
+# .env o Render environment variables
+MQTT_HOST=your-cluster.hivemq.cloud
+MQTT_PORT=8883
+MQTT_USERNAME=your_username
+MQTT_PASSWORD=your_password
+MQTT_TOPIC=solaris/cells/+/readings
+```
+
+**Nota:** Si `MQTT_HOST` no está definido, la API arranca sin MQTT y solo recibe lecturas por HTTP.
+
+### Código ESP32 con PubSubClient
+
+**Instalación de Librerías:**
+1. Sketch → Include Library → Manage Libraries
+2. Buscar: "PubSubClient" (Nick O'Leary)
+3. Instalar
+
+**Sketch Completo (MQTT):**
+
+```cpp
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include <time.h>
+
+// ===== Configuración WiFi =====
+const char* SSID = "TU_SSID";
+const char* PASSWORD = "TU_PASSWORD";
+
+// ===== Configuración MQTT (HiveMQ Cloud) =====
+const char* MQTT_BROKER = "your-cluster.hivemq.cloud";
+const int MQTT_PORT = 8883;
+const char* MQTT_USER = "your_username";
+const char* MQTT_PASS = "your_password";
+
+// ===== Configuración Sensor =====
+const int CELL_ID = 1;  // ID de la celda en Solaris Monitoring
+const int ADC_PIN = A0; // GPIO 36
+const int INTERVAL_MS = 300000; // 5 minutos
+
+// ===== Configuración ADC =====
+const float REF_VOLTAGE = 3.3;
+const int ADC_MAX = 4095;
+
+// Clientes WiFi y MQTT
+WiFiClientSecure espClient;
+PubSubClient mqttClient(espClient);
+
+unsigned long last_send = 0;
+
+void setup() {
+    Serial.begin(115200);
+    delay(2000);
+
+    Serial.println("\n\nIniciando ESP32 (MQTT)...");
+    
+    // Desabilitar verificación de certificado (desarrollo)
+    espClient.setInsecure();
+    
+    connect_wifi();
+    mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
+    mqttClient.setCallback(on_mqtt_message);
+}
+
+void loop() {
+    // Reconectar WiFi si es necesario
+    if (WiFi.status() != WL_CONNECTED) {
+        connect_wifi();
+    }
+
+    // Reconectar MQTT si es necesario
+    if (!mqttClient.connected()) {
+        connect_mqtt();
+    } else {
+        mqttClient.loop();
+    }
+
+    // Enviar lectura cada 5 minutos
+    if (millis() - last_send > INTERVAL_MS) {
+        send_reading_mqtt();
+        last_send = millis();
+    }
+
+    delay(1000);
+}
+
+void connect_wifi() {
+    Serial.printf("Conectando a WiFi: %s\n", SSID);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(SSID, PASSWORD);
+
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+        delay(500);
+        Serial.print(".");
+        attempts++;
+    }
+
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("\nWiFi conectado!");
+        Serial.print("IP: ");
+        Serial.println(WiFi.localIP());
+    } else {
+        Serial.println("\nError: No se pudo conectar a WiFi");
+    }
+}
+
+void connect_mqtt() {
+    Serial.printf("Conectando a MQTT broker: %s:%d\n", MQTT_BROKER, MQTT_PORT);
+    
+    String client_id = "solaris-esp32-" + String(random(0xffff), HEX);
+    
+    if (mqttClient.connect(client_id.c_str(), MQTT_USER, MQTT_PASS)) {
+        Serial.println("✓ Conectado a MQTT broker");
+    } else {
+        Serial.printf("✗ Error de conexión MQTT: %d\n", mqttClient.state());
+        delay(5000); // Retry en 5 segundos
+    }
+}
+
+void send_reading_mqtt() {
+    if (!mqttClient.connected()) {
+        Serial.println("MQTT desconectado, intentando reconectar...");
+        connect_mqtt();
+        return;
+    }
+
+    // Leer voltaje del ADC
+    int raw_adc = analogRead(ADC_PIN);
+    float voltage = (raw_adc / (float)ADC_MAX) * REF_VOLTAGE;
+
+    Serial.printf("ADC Raw: %d, Voltaje: %.2f V\n", raw_adc, voltage);
+
+    // Crear JSON con ArduinoJson
+    DynamicJsonDocument doc(256);
+    doc["voltage_measured"] = voltage;
+    doc["timestamp"] = get_iso_timestamp();
+
+    // Topic: solaris/cells/{cell_id}/readings
+    String topic = "solaris/cells/" + String(CELL_ID) + "/readings";
+
+    // Serializar JSON a string
+    String payload;
+    serializeJson(doc, payload);
+
+    // Publicar en MQTT
+    if (mqttClient.publish(topic.c_str(), payload.c_str())) {
+        Serial.printf("✓ Lectura publicada en topic: %s\n", topic.c_str());
+        Serial.printf("  Payload: %s\n", payload.c_str());
+    } else {
+        Serial.printf("✗ Error al publicar en MQTT\n");
+    }
+}
+
+void on_mqtt_message(char* topic, byte* payload, unsigned int length) {
+    Serial.printf("Mensaje recibido en topic: %s\n", topic);
+    // Manejar mensajes recibidos si es necesario
+}
+
+String get_iso_timestamp() {
+    // Retornar timestamp ISO 8601 (simplificado)
+    time_t now = time(nullptr);
+    struct tm* timeinfo = localtime(&now);
+    
+    char buffer[30];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+    return String(buffer);
+}
+```
+
+**Instrucciones:**
+1. Instalar librería PubSubClient y ArduinoJson via Arduino IDE
+2. Modificar SSID, PASSWORD, MQTT_BROKER, MQTT_USER, MQTT_PASS, CELL_ID
+3. En producción, usar certificado TLS completo (no `setInsecure()`)
+4. Upload al ESP32
+
+### Ventajas MQTT vs HTTP
+
+| Aspecto | HTTP | MQTT |
+|--------|------|------|
+| Consumo de energía | Alto | Muy bajo |
+| Conexión | Completa (3-way handshake TCP) | Ligera (publish/subscribe) |
+| Latencia | Más alta | Baja |
+| Ideal para | Conexión estable | Conexión intermitente |
+| Batería | ~1 día | ~1 semana |
+
+### Verificación en Producción
+
+Una vez configurado en Render con credenciales MQTT, puedes verificar que las lecturas llegan:
+
+```bash
+# 1. Publicar un mensaje de prueba con mosquitto_pub
+mosquitto_pub -h your-cluster.hivemq.cloud -p 8883 \
+  -u your_username -P your_password \
+  --cafile ca.crt \
+  -t "solaris/cells/1/readings" \
+  -m '{"voltage_measured": 4.85, "timestamp": "2026-09-14T10:00:00Z"}'
+
+# 2. Verificar en API
+curl http://solaris-monitoring-api.onrender.com/api/v1/readings | jq .
+
+# 3. Verificar estado MQTT en /health
+curl http://solaris-monitoring-api.onrender.com/health | jq .mqtt_status
+```
+
+---
+
 ## Troubleshooting
 
 | Problema | Causa | Solución |

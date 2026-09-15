@@ -28,6 +28,11 @@ class Settings:
     api_title: str = DEFAULT_API_TITLE
     api_version: str = DEFAULT_API_VERSION
     device_api_key: str | None = None
+    mqtt_host: str | None = None
+    mqtt_port: int = 8883
+    mqtt_username: str | None = None
+    mqtt_password: str | None = None
+    mqtt_topic: str = "solaris/cells/+/readings"
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
@@ -43,10 +48,20 @@ class Settings:
             )
             raise ValueError(msg)
 
+        # MQTT es opcional: si MQTT_HOST no está definido, el adaptador se deshabilita
+        mqtt_host = source.get("MQTT_HOST")
+        mqtt_port_str = source.get("MQTT_PORT", "8883")
+        mqtt_port = int(mqtt_port_str) if mqtt_port_str else 8883
+
         return cls(
             database_url=normalize_database_url(source.get("DATABASE_URL", DEFAULT_DATABASE_URL)),
             environment=environment,
             api_title=source.get("API_TITLE", DEFAULT_API_TITLE),
             api_version=source.get("API_VERSION", DEFAULT_API_VERSION),
             device_api_key=device_api_key,
+            mqtt_host=mqtt_host,
+            mqtt_port=mqtt_port,
+            mqtt_username=source.get("MQTT_USERNAME"),
+            mqtt_password=source.get("MQTT_PASSWORD"),
+            mqtt_topic=source.get("MQTT_TOPIC", "solaris/cells/+/readings"),
         )
