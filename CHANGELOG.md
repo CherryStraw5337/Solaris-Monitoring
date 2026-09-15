@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.5.0 (2026-09-15)
+
+### Documentation
+
+- Add Render deployment link
+  ([`fdb9383`](https://github.com/CherryStraw5337/Solaris-Monitoring/commit/fdb9383f66583d0e191fca9843f2fc6a5cf37e18))
+
+### Features
+
+- Integrate optional MQTT runtime
+  ([`344a7ef`](https://github.com/CherryStraw5337/Solaris-Monitoring/commit/344a7ef76966ff602d76d8635680459fbd3e3fae))
+
+
 ## v1.4.0 (2026-09-14)
 
 ### Bug Fixes
