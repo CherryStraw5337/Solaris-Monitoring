@@ -22,5 +22,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 
 EXPOSE 8000
 
+# Un solo proceso: cada worker de uvicorn abriría su propio suscriptor MQTT y las
+# lecturas se guardarían repetidas (ver ADR-0002).
 CMD alembic upgrade head && \
-    uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+    uvicorn main:app --host 0.0.0.0 --port 8000

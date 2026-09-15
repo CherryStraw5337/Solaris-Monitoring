@@ -34,7 +34,7 @@ services:
       - key: MQTT_PASSWORD
         sync: false
       - key: MQTT_TOPIC
-        value: solaris/edsia_beyond/cell_1/voltage
+        value: solaris/readings
 
 databases:
   - name: solaris-monitoring-db

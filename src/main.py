@@ -1,14 +1,16 @@
+import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from db import engine  # Importa el engine de la base de datos
+from db import SessionLocal
 from utils.config import Settings
 from utils.exception_handlers import register_exception_handlers
-from utils.models import Base  # Importa la base de modelos SQLAlchemy
-from utils.mqtt_listener import iniciar_mqtt
+from utils.mqtt_listener import MqttConfig, MqttListener
 from utils.routers import cells, health, readings
 
 API_PREFIX = "/api/v1"
@@ -25,6 +27,20 @@ def get_settings() -> Settings:
     return _current_settings
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    # Sin configuración, los logger.info de la app no aparecerían junto a los de uvicorn.
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(name)s - %(message)s")
+    # El esquema lo gestiona Alembic (preDeployCommand en Render, CMD en Docker).
+    listener = MqttListener(MqttConfig.from_env(), SessionLocal)
+    app.state.mqtt = listener
+    listener.start()
+    try:
+        yield
+    finally:
+        listener.stop()
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     global _current_settings
     resolved = settings if settings is not None else Settings.from_env()
@@ -34,8 +50,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title=resolved.api_title,
         description="API REST y MQTT para monitoreo de eficiencia de celdas fotovoltaicas",
         version=resolved.api_version,
+        lifespan=lifespan,
     )
-
+    # allow_credentials debe ser False mientras el origen sea comodín: el navegador
+    # rechaza la combinación "*" + credenciales.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -43,19 +61,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
     register_exception_handlers(app)
     app.include_router(health.router)
     app.include_router(cells.router, prefix=API_PREFIX)
     app.include_router(readings.router, prefix=API_PREFIX)
-
-    @app.on_event("startup")
-    def startup_event() -> None:
-        # Crea las tablas automáticamente (soluciona el error de "no such table")
-        Base.metadata.create_all(bind=engine)
-        # Arranca tu listener MQTT en segundo plano
-        iniciar_mqtt()
-
+    # Debe montarse al final: un mount en "/" captura toda ruta no registrada antes.
     app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="landing")
     return app
 

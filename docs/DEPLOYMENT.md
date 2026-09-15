@@ -70,6 +70,9 @@ cp .env.example .env
 ### Ejecutar Localmente
 
 ```bash
+# Crear o actualizar el esquema (la app no crea tablas al arrancar)
+alembic upgrade head
+
 # Modo desarrollo (auto-reload)
 uvicorn main:app --app-dir src --reload --host 0.0.0.0 --port 8000
 ```

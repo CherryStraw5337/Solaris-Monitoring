@@ -1,9 +1,8 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
-#include "secrets.h"  // Carga tus credenciales locales
+#include "secrets.h"  // Carga tus credenciales locales y el CELL_ID de esta placa
 
-const int CELL_ID = 1;
 const int ADC_PIN = 34;       // Pin analógico donde entra el voltaje de la celda
 const float REF_VOLTAGE = 3.3; // Voltaje de referencia del ESP32
 const int ADC_MAX = 4095;     // Resolución de 12 bits del ESP32
@@ -11,7 +10,8 @@ const int ADC_MAX = 4095;     // Resolución de 12 bits del ESP32
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
-const char* MQTT_TOPIC = "solaris/edsia_beyond/cell_1/voltage";
+// Topic compartido por todas las celdas: la API identifica la celda por cell_id en el JSON.
+const char* MQTT_TOPIC = "solaris/readings";
 
 void setup_wifi() {
     delay(10);
