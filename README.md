@@ -9,7 +9,7 @@ API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia,
 - **One-pager ejecutivo:** [docs/ONE_PAGER.md](docs/ONE_PAGER.md)
 - **Decisiones de arquitectura:** [docs/adr/](docs/adr/)
 - **Proceso, retrospectiva y backlog vivo:** [docs/PROCESO.md](docs/PROCESO.md)
-- **[Video demo](https://youtu.be/JEC2zUyNVf0)** 
+- **[Video demo](https://youtu.be/P3xAPHREQHI)** 
 
 ## Características
 
