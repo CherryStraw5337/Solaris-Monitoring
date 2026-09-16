@@ -1,8 +1,5 @@
 # Solaris Monitoring — One-pager ejecutivo
 
-**Reto Final EDSIA 2026** · Equipo: Martin Contreras, Lyla Estrada, José Bello
-Producción: <https://solaris-monitoring-api.onrender.com/> · Repositorio: <https://github.com/CherryStraw5337/Solaris-Monitoring>
-
 ## El problema
 
 Un panel fotovoltaico no se apaga cuando falla: se degrada en silencio. Sigue entregando voltaje, solo que menos del que debería, y la pérdida no se nota hasta que alguien sube con un multímetro a medir celda por celda.
