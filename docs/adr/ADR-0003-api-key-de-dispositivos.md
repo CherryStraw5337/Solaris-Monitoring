@@ -1,4 +1,4 @@
-# ADR-0004: Autenticación de dispositivos por API key en la escritura
+# ADR-0003: Autenticación de dispositivos por API key en la escritura
 
 ## Estado
 Aceptado. Implementado el 13 de septiembre de 2026 (commit `9d4641d`, issue [#14](https://github.com/CherryStraw5337/Solaris-Monitoring/issues/14)); este ADR se registra el 15 de septiembre para dejar por escrito una decisión que ya está en producción.
