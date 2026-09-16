@@ -638,7 +638,7 @@ Se indicó que bastaba con hacer `git add mqtt_listener.py`, `git commit` y `git
 # José B - Prompt #46
 ### IA utilizada: Gemini (Google)
 **Prompt del integrante completo:**
-> NFO: Finished server process [4624] INFO: Started server process [8720] INFO: Waiting for application startup. Intentando conectar sincrónicamente a HiveMQ (77bc782066404afd905e5dba6d27d880.s1.eu.hivemq.cloud:8883)... INFO: Application startup complete. Conectado exitosamente al broker MQTT desde FastAPI Mensaje MQTT recibido -> Celda: 1, Voltaje: 1.0V, Eficiencia: 30.16% ✗ Error al guardar en BD: (sqlite3.OperationalError) no such table: readings [...] WARNING: StatReload detected changes in 'mqtt_listener.py'. Reloading...
+> NFO: Finished server process [4624] INFO: Started server process [8720] INFO: Waiting for application startup. Intentando conectar sincrónicamente a HiveMQ (xxxxxxxxxxxxx)... INFO: Application startup complete. Conectado exitosamente al broker MQTT desde FastAPI Mensaje MQTT recibido -> Celda: 1, Voltaje: 1.0V, Eficiencia: 30.16% ✗ Error al guardar en BD: (sqlite3.OperationalError) no such table: readings [...] WARNING: StatReload detected changes in 'mqtt_listener.py'. Reloading...
 
 **Respuesta de la IA completa:**
 Se propuso automatizar la creación de tablas agregando `Base.metadata.create_all(bind=engine)` dentro del evento `startup` de `main.py`, para que la base de datos se inicializara sola en cada arranque.
