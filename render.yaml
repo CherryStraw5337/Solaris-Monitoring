@@ -21,6 +21,10 @@ services:
           property: connectionString
       - key: ENVIRONMENT
         value: production
+      # Fecha de actualización que /health y el panel muestran. Sin ella, /health
+      # responde "No definida".
+      - key: UPDATE_DATE
+        value: "2026-09-15"
       # sync: false no crea el valor en un Blueprint ya existente: Render lo ignora al
       # sincronizar. La clave se agrega a mano en Environment del servicio.
       - key: DEVICE_API_KEY

@@ -8,6 +8,7 @@ API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia,
 - **En producción:** [solaris-monitoring-api.onrender.com](https://solaris-monitoring-api.onrender.com/)
 - **One-pager ejecutivo:** [docs/ONE_PAGER.md](docs/ONE_PAGER.md)
 - **Decisiones de arquitectura:** [docs/adr/](docs/adr/)
+- **Proceso, retrospectiva y backlog vivo:** [docs/PROCESO.md](docs/PROCESO.md)
 
 ## Características
 

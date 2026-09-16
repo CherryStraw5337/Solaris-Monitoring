@@ -1,4 +1,4 @@
-# ADR-0005: Despliegue continuo en Render con migraciones antes del tráfico
+# ADR-0004: Despliegue continuo en Render con migraciones antes del tráfico
 
 ## Estado
 Aceptado. Implementado entre el 12 y el 13 de septiembre de 2026 (`render.yaml` en el commit `22fcf9a`, pre-deploy en `ad981a9`); este ADR se registra el 15 de septiembre para dejar por escrito una decisión que ya está en producción.
