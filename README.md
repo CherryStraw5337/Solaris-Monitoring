@@ -3,6 +3,12 @@
 API para monitorear celdas y paneles fotovoltaicos, con análisis de eficiencia, detección de anomalías y soporte para dispositivos IoT.
 [![CI/CD](https://github.com/CherryStraw5337/Solaris-Monitoring/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/CherryStraw5337/Solaris-Monitoring/actions/workflows/ci-cd.yml)
 
+**Para quién es:** quien mantiene una instalación fotovoltaica y hoy solo detecta una celda degradada subiendo a medirla con un multímetro.
+
+- **En producción:** [solaris-monitoring-api.onrender.com](https://solaris-monitoring-api.onrender.com/)
+- **One-pager ejecutivo:** [docs/ONE_PAGER.md](docs/ONE_PAGER.md)
+- **Decisiones de arquitectura:** [docs/adr/](docs/adr/)
+
 ## Características
 
 - API REST con FastAPI con autenticación por API key (X-API-Key).
